@@ -1,0 +1,64 @@
+.midi-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #f1f1f1;
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 2px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.midi-button:hover {
+    background-color: #333;
+    color: white;
+}
+
+.midi-button:active {
+    background-color: #333;
+    color: white;
+}
+
+.midi-button.disabled {
+    background-color: #f1f1f1;
+    color: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+.midi-button.disabled:hover {
+    background-color: #f1f1f1;
+    color: #ccc;
+}
+
+.midi-button.disabled:active {
+    background-color: #f1f1f1;
+    color: #ccc;
+}
+
+.midi-button.learning {
+    background-color: #ff5722;
+    color: white;
+    border-color: #ff5722;
+}
+
+.midi-button.learning {
+    animation: learning-pulse 1s infinite;
+    border-color: #ff5722;
+}
+
+@keyframes learning-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 87, 34, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0); }
+}
+
+.midi-button.active {
+    background-color: #4CAF50;
+    color: white;
+}

@@ -1,0 +1,246 @@
+.slider-container {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.midi-slider {
+    width: 200px;
+    height: 30px;
+    padding: 0 10px;
+    background: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.midi-slider.vertical {
+    width: 30px;
+    height: 200px;
+    padding: 10px 0;
+}
+
+.slider-track {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 50%;
+    height: 4px;
+    background: #444;
+    border-radius: 2px;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.vertical .slider-track {
+    left: 50%;
+    top: 10px;
+    bottom: 10px;
+    width: 4px;
+    height: auto;
+    transform: translateX(-50%);
+}
+
+
+
+.slider-value {
+    position: absolute;
+    text-align: center;
+    font-family: monospace;
+    font-size: 12px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+    min-width: 30px;
+}
+
+.midi-slider .slider-value {
+    top: 50%;
+    right: -40px;
+    transform: translateY(-50%);
+}
+
+.midi-slider.vertical .slider-value {
+    left: 50%;
+    bottom: -25px;
+    top: auto;
+    transform: translateX(-50%);
+}
+
+.slider-thumb {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #888;
+    border: 2px solid #666;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.slider-thumb:hover {
+    background: #aaa;
+}
+
+.midi-slider.learning .slider-thumb {
+    background: #ff5555;
+    border-color: #ff3333;
+    box-shadow: 0 0 8px #ff5555;
+}
+
+.midi-knob {
+    width: 60px;
+    height: 80px;
+    padding: 10px;
+    background: #2a2a2a;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.knob-outer {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    background: linear-gradient(145deg, #323841, #272B33);
+    box-shadow: 
+        8px 8px 16px rgba(0,0,0,0.3),
+        -8px -8px 16px rgba(255,255,255,0.03);
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.knob-marks {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+.knob-mark {
+    position: absolute;
+    width: 2px;
+    height: 6px;
+    background: rgba(255,149,0,0.3);
+    left: 50%;
+    transform-origin: 0 25px;
+}
+
+.knob-inner {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #272B33, #323841);
+    box-shadow: 
+        inset 2px 2px 4px rgba(0,0,0,0.3),
+        inset -2px -2px 4px rgba(255,255,255,0.03);
+    transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.knob-indicator {
+    position: absolute;
+    width: 2px;
+    height: 40%;
+    background: #e74c3c;
+    left: calc(50% - 1px);
+    top: 10%;
+    transform-origin: bottom center;
+    transition: transform 0.1s ease;
+}
+
+.knob-center {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #FF9500;
+    border-radius: 50%;
+    top: calc(50% - 5px);
+    left: calc(50% - 5px);
+    box-shadow: 0 0 10px rgba(255,149,0,0.4);
+}
+
+.knob-outer:active {
+    cursor: grabbing;
+}
+
+/* Fine-tuning for specific sizes */
+[style*="width: 50px"] .knob-mark {
+    transform-origin: 0 20px;
+    height: 6px;
+}
+
+[style*="width: 100px"] .knob-mark {
+    transform-origin: 0 45px;
+    height: 10px;
+}
+
+.knob-value {
+    text-align: center;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #95a5a6;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.knob-body {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #2c3e50;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.knob-body.active {
+    background: #34495e;
+}
+
+.knob-body.learning {
+    border: 2px solid #ff5555;
+    animation: learning-pulse 1s infinite;
+}
+
+.learning .knob-indicator {
+    background-color: #ff5555;
+}
+
+@keyframes learning-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,85,85,0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255,85,85,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,85,85,0); }
+}
+
+.midi-toggle-button.midi-controlled {
+    border: 2px solid #4CAF50;
+}
+
+.midi-toggle-button.midi-controlled.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.midi-toggle-button.midi-controlled:not(.active) {
+    background-color: #2a2a2a;
+    color: #4CAF50;
+}
+
+

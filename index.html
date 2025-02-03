@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MIDI Toggle Test</title>
+    <style>
+        body {
+            background: #2c2c2c;
+            color: white;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .center-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .main-toggle {
+            padding: 20px 40px;
+            font-size: 18px;
+            min-width: 120px;
+            margin-bottom: 20px;
+        }
+
+        .midi-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            background: #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions {
+            color: #999;
+            margin-top: 20px;
+        }
+
+        .midi-button:hover, .midi-toggle-button:hover {
+            background: #555;
+        }
+
+        .midi-button.active, .midi-toggle-button.active {
+            background: #666;
+            border-color: #888;
+        }
+
+        .midi-button.learning, .midi-toggle-button.learning {
+            border-color: #f0f;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { border-color: #f0f; }
+            50% { border-color: #90f; }
+            100% { border-color: #f0f; }
+        }
+
+        .instructions {
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .midi-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;  /* Assicuriamoci che sia sempre visibile */
+        }
+
+        .midi-status .indicator {
+            width: 12px;            /* Dimensione aumentata */
+            height: 12px;           /* Dimensione aumentata */
+            border-radius: 50%;
+            background: #666;
+            transition: background-color 0.3s;  /* Transizione più fluida */
+        }
+
+        .midi-status.connected .indicator {
+            background: #4CAF50;
+            box-shadow: 0 0 5px #4CAF50;  /* Aggiunto glow effect */
+        }
+
+        .midi-status.active .indicator {
+            animation: blink 0.5s;  /* Animation più veloce */
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .midi-log {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        .midi-log .log-entry {
+            padding: 2px 5px;
+            border-bottom: 1px solid #333;
+        }
+
+        .midi-log .timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+
+        .midi-log .component {
+            color: #4CAF50;
+            margin-right: 10px;
+        }
+
+        .midi-log .message {
+            color: #2196F3;
+            margin-right: 10px;
+        }
+
+        .midi-log .data {
+            color: #FFC107;
+        }
+
+        .midi-log-toggle {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #444;
+            border: 2px solid #555;
+            color: white;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .midi-log-toggle:hover {
+            background: #555;
+        }
+
+        .midi-log-toggle.active {
+            background: #2196F3;
+            border-color: #1976D2;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+
+        .midi-log {
+            display: block; /* Stato iniziale visibile */
+            transition: opacity 0.3s ease;
+        }
+
+        .pad-btn.triggered {
+            background: #2196F3 !important;
+            border-color: #1976D2;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+            transform: scale(0.95);
+        }
+
+        .toggles-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .main-button {
+            padding: 20px 40px;
+            font-size: 18px;
+            min-width: 120px;
+            background-color: #444;
+            transition: all 0.2s;
+            border: 2px solid #555;
+        }
+
+        .main-button:active,
+        .main-button.active {
+            background-color: #666;
+            transform: scale(0.95);
+            box-shadow: 0 0 15px #2196F3;
+            border-color: #2196F3;
+        }
+
+        /* Stili base del bottone */
+        .midi-button {
+            padding: 20px 40px;
+            font-size: 18px;
+            min-width: 120px;
+            background-color: #444;
+            border: 2px solid #555;
+            color: white;
+            transition: all 0.05s ease; /* Transizione più veloce */
+            cursor: pointer;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        /* Effetto flash */
+        .midi-button.flash-button {
+            background-color: #2196F3 !important;
+            border-color: #1976D2;
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.7);
+            transform: scale(0.95);
+        }
+
+        /* Rimuoviamo gli stili non necessari e manteniamo solo l'essenziale */
+        .midi-button:hover {
+            background-color: #555;
+        }
+
+        .midi-button.active,
+        .midi-button.active-button {
+            background-color: #2196F3 !important;
+            transform: scale(0.98);
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.5);
+            border-color: #1976D2;
+        }
+
+        .midi-button.momentary {
+            transition: all 0.15s ease;
+        }
+
+        .midi-button.momentary.active {
+            animation: buttonPulse 0.15s ease;
+        }
+
+        @keyframes buttonPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .active-button {
+            background: #2196F3;
+            border-color: #1976D2;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+
+        /* Stili per i Radio button */
+        .midi-radio {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            padding-left: 45px;  /* Spazio per l'indicatore */
+        }
+
+        .radio-indicator {
+            position: absolute;
+            left: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #555;
+            border-radius: 50%;
+        }
+
+        .radio-active .radio-indicator {
+            border-color: #2196F3;
+            background: #2196F3;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+
+        .radio-active .radio-indicator::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* Aggiorna gli stili per i Radio button */
+        .midi-radio {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            padding-left: 45px;
+        }
+
+        .radio-indicator {
+            position: absolute;
+            left: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #555;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .midi-radio.active .radio-indicator,
+        .midi-radio.radio-active .radio-indicator {
+            border-color: #2196F3;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+
+        .midi-radio.active .radio-indicator::after,
+        .midi-radio.radio-active .radio-indicator::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #2196F3;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        /* Stili per il Fader */
+        .midi-fader {
+            width: 60px;
+            height: 200px;
+            position: relative;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .fader-track {
+            width: 8px;
+            height: 100%;
+            background: #444;
+            position: relative;
+            margin: 0 auto;
+            border-radius: 4px;
+        }
+
+        .fader-handle {
+            width: 30px;
+            height: 20px;
+            background: #666;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .fader-handle:hover {
+            background: #777;
+        }
+
+        .midi-fader.learning .fader-handle {
+            border: 2px solid #f0f;
+            animation: pulse 1s infinite;
+        }
+
+        .midi-fader .fader-handle:active {
+            background: #2196F3;
+        }
+    </style>
+    <!--importa i css-->
+    <link rel="stylesheet" href="src/css/styles.css">
+    <link rel="stylesheet" href="src/css/components/button.css">
+</head>
+<body>
+    <div id="midi-status" class="midi-status">
+        <div class="indicator"></div>
+        <span class="status-text">Initializing MIDI...</span>
+    </div>
+    <div id="controls"></div>
+    <script type="module" src="src/js/app.js"></script>
+</body>
+</html>
