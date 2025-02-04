@@ -123,30 +123,42 @@ export default class Slider extends AbstractUIComponent {
         let pos;
         
         if (this.options.vertical) {
-            // Per lo slider verticale usiamo la coordinata Y
-            pos = 1 - ((e.clientY - rect.top) / rect.height);
+            const mouseY = e.clientY - rect.top;
+            const height = rect.height - this.thumb.offsetHeight;
+            pos = 1 - (mouseY / height);
+            pos = Math.max(0, Math.min(1, pos));
         } else {
             pos = (e.clientX - rect.left) / rect.width;
         }
         
         const value = Math.round(
-            this.options.min + (this.options.max - this.options.min) * Math.max(0, Math.min(1, pos))
+            this.options.min + (this.options.max - this.options.min) * pos
         );
         
         this.setValue(value);
-        this.updateThumbPosition();
     }
 
     updateThumbPosition() {
-        const percentage = (this._value - this.options.min) / (this.options.max - this.options.min) * 100;
         if (this.options.vertical) {
-            this.thumb.style.left = '50%';
-            this.thumb.style.top = `${100 - percentage}%`; // Invertiamo la percentuale e usiamo top invece di bottom
-            this.thumb.style.transform = 'translate(-50%, -50%)';
+            const range = this.options.max - this.options.min;
+            const percentage = ((this._value - this.options.min) / range);
+            const height = this.track.offsetHeight - this.thumb.offsetHeight;
+            const pos = height * (1 - percentage);
+            this.thumb.style.top = `${pos}px`;
         } else {
-            this.thumb.style.left = `${percentage}%`;
-            this.thumb.style.top = '50%';
-            this.thumb.style.transform = 'translate(-50%, -50%)';
+            const range = this.options.max - this.options.min;
+            const percent = ((this._value - this.options.min) / range) * 100;
+            
+            if (this.options.vertical) {
+                this.thumb.style.left = '50%';
+                this.thumb.style.bottom = `${percent}%`;
+                this.thumb.style.top = 'auto';
+                this.thumb.style.transform = 'translateX(-50%)';
+            } else {
+                this.thumb.style.left = `${percent}%`;
+                this.thumb.style.top = '50%';
+                this.thumb.style.transform = 'translate(-50%, -50%)';
+            }
         }
     }
 

@@ -1,201 +1,124 @@
-import ToggleButton from './ui-components/ToggleButton.js';
-import Button from './ui-components/Button.js';
-import Radio from './ui-components/Radio.js';
-import Slider from './ui-components/Slider.js';
-import Knob from './ui-components/Knob.js';  // Add this import
 import MIDILearnManager from './midi/MIDILearnManager.js';
 import MIDILogger from './utils/MIDILogger.js';
+import Mixer from './audio-components/mixer/Mixer.js';
+import MixerUI from './audio-components/mixer/MixerUI.js';
+import SimpleOsc from './audio-components/simple-osc/SimpleOsc.js';
+import SimpleOscUI from './audio-components/simple-osc/SimpleOscUI.js';
+import AudioEngine from './engines/AudioEngine.js';
+import RenderEngine from './engines/RenderEngine.js';
+import Transport from './audio-components/transport/Transport.js';
+import TransportUI from './audio-components/transport/TransportUI.js';
+import Sequence from './audio-components/sequence/Sequence.js';
+import SequenceUI from './audio-components/sequence/SequenceUI.js';
 
 async function initializeApp() {
     try {
-        // Inizializza il logger MIDI
-        MIDILogger.initialize();
-        
-        // Attendiamo che il DOM sia completamente caricato
+        // Ensure DOM is ready first
         if (document.readyState === 'loading') {
             await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
         }
 
-        // Inizializza il sistema MIDI
+        const controlsContainer = document.getElementById('controls');
+        if (!controlsContainer) {
+            throw new Error('Controls container element not found');
+        }
+        controlsContainer.className = 'center-container';
+
+        // Initialize MIDI Logger
+        MIDILogger.initialize();
+
+        // Initialize MIDI system
         const midiInitialized = await MIDILearnManager.initialize();
         if (!midiInitialized) {
-            console.warn('MIDI initialization failed');
-            document.getElementById('controls').innerHTML = `
+            controlsContainer.innerHTML = `
                 <div class="warning">
                     MIDI support not available. Please ensure you're using Chrome with a MIDI device connected.
                 </div>`;
             return;
         }
 
-        // Crea il container centrale
-        const controlsContainer = document.getElementById('controls');
-        controlsContainer.className = 'center-container';
+        const renderEngine = new RenderEngine(controlsContainer);
+        const audioEngine = new AudioEngine();
+        await audioEngine.initialize();
 
-        // Crea il container per i controlli
-        const togglesContainer = document.createElement('div');
-        togglesContainer.className = 'toggles-container';
-        controlsContainer.appendChild(togglesContainer);
+        // Create and initialize components
+        const mixer = new Mixer('mainMixer', 4);
+        await audioEngine.addComponent(mixer);
+        audioEngine.setMixer(mixer);
+        mixer.connect(audioEngine.audioContext.destination);
 
-        // Crea i due toggle button
-        const midiToggle1 = new ToggleButton('midiToggle1', {
-            label: 'Toggle 1',
-            className: 'midi-toggle-button main-toggle'
-        });
+        const mixerUI = new MixerUI(mixer);
+        renderEngine.addComponent(mixerUI);
 
-        const midiToggle2 = new ToggleButton('midiToggle2', {
-            label: 'Toggle 2',
-            className: 'midi-toggle-button main-toggle'
-        });
-
-        // Crea il button
-        const actionButton = new Button('actionButton', {
-            label: 'Action',
-            className: 'midi-button main-button'
-        });
-
-        // Eventi dei toggle
-        midiToggle1.on('activate', () => {
-            console.log('Toggle 1 ON');
-            MIDILogger.log('midiToggle1', 'Activated', { state: 'ON' });
-        });
+        // Create oscillator
+        const osc = new SimpleOsc('osc-1');
+        await audioEngine.addComponent(osc);
         
-        midiToggle1.on('deactivate', () => {
-            console.log('Toggle 1 OFF');
-            MIDILogger.log('midiToggle1', 'Deactivated', { state: 'OFF' });
-        });
-
-        midiToggle2.on('activate', () => {
-            console.log('Toggle 2 ON');
-            MIDILogger.log('midiToggle2', 'Activated', { state: 'ON' });
-        });
+        // Colleghiamo l'oscillatore al primo canale del mixer usando il metodo corretto
+        const channel0Input = mixer.getChannelInput(0);
+        if (channel0Input) {
+            osc.connect(channel0Input);
+        } else {
+            console.error('Mixer channel 0 not available');
+        }
         
-        midiToggle2.on('deactivate', () => {
-            console.log('Toggle 2 OFF');
-            MIDILogger.log('midiToggle2', 'Deactivated', { state: 'OFF' });
+        const oscUI = new SimpleOscUI(osc);
+        renderEngine.addComponent(oscUI);
+
+        // Create transport
+        const transport = new Transport('main-transport');
+        await audioEngine.addComponent(transport);
+        
+        const transportUI = new TransportUI(transport);
+        renderEngine.addComponent(transportUI);
+
+        // Create sequence
+        const sequence = new Sequence('seq-1', { length: 16 });
+        const oscTrack = sequence.addTrack('osc-1');
+        
+        // Create a simple pattern (1 = trigger, 0 = silence)
+        oscTrack.setSteps([
+            1, 0, 0, 0,  // Beat 1
+            1, 0, 0, 0,  // Beat 2
+            1, 0, 0, 0,  // Beat 3
+            1, 0, 1, 0   // Beat 4
+        ]);
+
+        // Add sequence to transport
+        transport.addSequence(sequence);
+
+        // Create sequence UI
+        const sequenceUI = new SequenceUI(sequence);
+        renderEngine.addComponent(sequenceUI);
+
+        // Listen for sequence triggers
+        sequence.on('trigger', ({ trackId, tick, data }) => {
+            if (trackId === 'osc-1') {
+                osc.triggerNote(127, 100); // velocity 127, duration 100ms
+                
+                // Highlight current step
+                const buttons = sequenceUI.gridButtons;
+                buttons.forEach(btn => btn.element.classList.remove('playing'));
+                if (buttons[tick]) {
+                    buttons[tick].element.classList.add('playing');
+                }
+            }
         });
 
-        // Eventi del button - ora usiamo solo l'evento trigger
-        actionButton.on('trigger', () => {
-            console.log('Action button triggered');
-            MIDILogger.log('actionButton', 'Triggered');
-        });
+        // Set up transport in AudioEngine
+        audioEngine.setTransport(transport);
 
-        // Renderizza i controlli
-        midiToggle1.render(togglesContainer);
-        midiToggle2.render(togglesContainer);
-        actionButton.render(togglesContainer);
-
-        // Aggiunge il container per i radio buttons
-        const radioContainer = document.createElement('div');
-        radioContainer.className = 'toggles-container';
-        controlsContainer.appendChild(radioContainer);
-
-        // Crea il gruppo di radio buttons
-        const radio1 = new Radio('radio1', {
-            label: 'Option 1',
-            group: 'demoGroup',
-            className: 'midi-toggle-button main-toggle'
-        });
-
-        const radio2 = new Radio('radio2', {
-            label: 'Option 2',
-            group: 'demoGroup',
-            className: 'midi-toggle-button main-toggle'
-        });
-
-        const radio3 = new Radio('radio3', {
-            label: 'Option 3',
-            group: 'demoGroup',
-            className: 'midi-toggle-button main-toggle'
-        });
-
-        // Eventi dei radio buttons
-        [radio1, radio2, radio3].forEach(radio => {
-            radio.on('activate', () => {
-                console.log(`${radio.options.label} selected`);
-                MIDILogger.log('radio', 'Selected', { option: radio.options.label });
-            });
-        });
-
-        // Renderizza i radio buttons
-        radio1.render(radioContainer);
-        radio2.render(radioContainer);
-        radio3.render(radioContainer);
-
-        // After rendering radio buttons, add the slider
-        const sliderContainer = document.createElement('div');
-        sliderContainer.className = 'slider-container';
-        controlsContainer.appendChild(sliderContainer);
-
-        // Create slider instance
-        const slider = new Slider('demoSlider', {
-            min: 0,
-            max: 127,
-            value: 64,
-            className: 'midi-slider'
-        });
-
-        // Add vertical slider
-        const verticalSlider = new Slider('verticalSlider', {
-            min: 0,
-            max: 127,
-            value: 64,
-            vertical: true,
-            className: 'midi-slider vertical'
-        });
-
-        // Add slider events
-        slider.on('change', (value) => {
-            console.log(`Slider value: ${value}`);
-            MIDILogger.log('slider', 'Value changed', { value });
-        });
-
-        verticalSlider.on('change', (value) => {
-            console.log(`Vertical slider value: ${value}`);
-            MIDILogger.log('verticalSlider', 'Value changed', { value });
-        });
-
-        // Render the sliders
-        slider.render(sliderContainer);
-        verticalSlider.render(sliderContainer);
-
-        // Add knob container
-        const knobContainer = document.createElement('div');
-        knobContainer.className = 'knob-container';
-        controlsContainer.appendChild(knobContainer);
-
-        // Create knob instance
-        const knob = new Knob(document.createElement('div'), {
-            id: 'demoKnob',
-            min: 0,
-            max: 100,
-            value: 50,
-            size: 60
-        });
-
-        // Add knob events
-        knob.on('change', ({ value }) => {
-            console.log(`Knob value: ${value}`);
-            MIDILogger.log('knob', 'Value changed', { value });
-        });
-
-        // Render the knob
-        knobContainer.appendChild(knob.render());
-
-        // Aggiunge le istruzioni
-        const instructions = document.createElement('div');
-        instructions.className = 'instructions';
-        instructions.textContent = 'Right-click to enter MIDI learn mode';
-        controlsContainer.appendChild(instructions);
+        // Now you can use transport controls to start/stop the sequence
+        transport.setBPM(120);
+        // transport.start(); // Will start the sequence
 
     } catch (error) {
-        console.error('Failed to initialize:', error);
-        document.getElementById('controls').innerHTML = `
-            <div class="error">Initialization failed: ${error.message}</div>`;
+        console.error('Application initialization failed:', error);
+        throw new Error(`App initialization failed: ${error.message}`);
     }
 }
 
-// Avvia l'app quando il DOM è pronto
+// Start app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeApp);
 } else {

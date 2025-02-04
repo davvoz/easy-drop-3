@@ -1,0 +1,106 @@
+.transport-component {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px rgba(255, 255, 255, 0.05);
+    width: fit-content;
+}
+
+.transport-controls {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    position: relative;
+    border: 1px solid rgba(74, 158, 255, 0.1);
+}
+
+.bpm-knob {
+    position: relative;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.bpm-knob::after {
+    content: 'BPM';
+    position: absolute;
+    bottom: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #666;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.play-button {
+    min-width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e1e1e, #141414);
+    border: none;
+    color: #4a9eff;
+    font-size: 1.8rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.play-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.5),
+        inset 0 1px rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, #222, #161616);
+}
+
+.play-button.active {
+    background: linear-gradient(135deg, #1a4a7a, #0d2b4d);
+    color: #7ab9ff;
+    box-shadow:
+        0 0 20px rgba(74, 158, 255, 0.2),
+        inset 0 1px rgba(255, 255, 255, 0.1);
+    animation: pulse 2s infinite;
+}
+
+/* Stile per il knob del BPM */
+.bpm-knob .knob {
+    background: linear-gradient(135deg, #272727, #1a1a1a);
+    border: none;
+    box-shadow:
+        0 2px 15px rgba(0, 0, 0, 0.4),
+        inset 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.bpm-knob .knob:hover {
+    background: linear-gradient(135deg, #2a2a2a, #1d1d1d);
+}
+
+/* Aggiunge pulsazione sottile quando playing */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 20px rgba(74, 158, 255, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(74, 158, 255, 0.3);
+    }
+
+    100% {
+        box-shadow: 0 0 20px rgba(74, 158, 255, 0.2);
+    }
+}

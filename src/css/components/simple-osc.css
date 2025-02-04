@@ -1,0 +1,80 @@
+.simple-osc-component {
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid #333;
+    margin: 0 auto;
+    width: fit-content;
+    grid-template-columns: 1fr 1fr;
+}
+
+.simple-osc-component .frequency-knob {
+    grid-area: freq;
+}
+
+.simple-osc-component .volume-knob {
+    grid-area: vol;
+}
+
+.simple-osc-component .waveform-container {
+    grid-area: wave;
+    display: grid;
+    gap: 12px;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.simple-osc-component .play-button {
+    grid-area: play;
+    background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.simple-osc-component .play-button:active {
+    background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+    transform: scale(0.98);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.simple-osc-component .play-button.playing {
+    background: linear-gradient(145deg, #5a5a5a, #4a4a4a);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.simple-osc-component .wave-button {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 32px;  /* Dimensione del carattere */
+    line-height: 1;   /* Per centrare verticalmente */
+    color: #999;
+    transition: all 0.3s ease;
+}
+
+.simple-osc-component .wave-button.radio-active {
+    background: linear-gradient(145deg, #4a4a4a, #3a3a3a);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: #fff;
+}
+
+.simple-osc-component .wave-button:hover {
+    color: #ccc;
+}
+
+/* Rimuovi gli stili SVG che non servono più */
+

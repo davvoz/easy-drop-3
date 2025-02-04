@@ -1,0 +1,112 @@
+.mixer-component {
+    background: var(--color-bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-main);
+    padding: 16px;
+    border-radius: var(--border-radius);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    min-width: 320px;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: 20px;
+    transition: box-shadow var(--transition-medium);
+}
+
+.mixer-component:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.mixer-channels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 16px;
+    padding: 12px;
+    background: var(--color-bg-primary);
+    border-radius: var(--border-radius);
+}
+
+.mixer-channel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 8px;
+    background: var(--color-bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    width: 100%;
+}
+
+/* Rimuovi hover effect */
+.mixer-channel:hover {
+    background: var(--color-bg-secondary);
+    transform: none;
+}
+
+.mixer-channel .channel-label {
+    color: #888;
+    font-size: 0.8em;
+    margin-bottom: 5px;
+}
+
+/* Sezione master */
+.mixer-master {
+    padding: 12px;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--border-radius);
+    border-left: 1px solid var(--color-accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mixer-master::before {
+    content: 'MASTER';
+    color: var(--color-accent);
+    font-size: 0.8em;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+    text-shadow: none;
+    opacity: 0.9;
+}
+
+.mute-button, .solo-button {
+    width: 24px;
+    height: 24px;
+    background: var(--color-bg-tertiary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    line-height: 24px;
+}
+
+.mute-button.active {
+    background: var(--color-danger);
+    color: var(--color-text);
+    border-color: transparent;
+}
+
+.solo-button.active {
+    background: var(--color-warning);
+    color: var(--color-text);
+    border-color: transparent;
+}
+
+.channel-controls {
+    display: flex;
+    gap: 4px;
+    margin-top: auto; /* Spinge i controlli verso il basso */
+    padding-top: 8px;
+    order: 3; /* Riordina gli elementi */
+}
+
+.pan-container {
+    order: 1;
+    margin: 4px 0;
+}
+
+.midi-slider.vertical {
+    order: 2;
+    height: 160px; /* Altezza fissa per consistenza */
+}

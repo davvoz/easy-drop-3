@@ -30,10 +30,12 @@ export default class Radio extends ToggleButton {
     }
 
     activate() {
+        console.log('Radio activate called for:', this.id); // Debug
         // First deactivate others in group
         if (Radio.groups[this.group]) {
             Radio.groups[this.group].forEach(radio => {
                 if (radio !== this && radio._active) {
+                    console.log('Deactivating radio:', radio.id); // Debug
                     radio.deactivate();
                 }
             });
@@ -42,14 +44,17 @@ export default class Radio extends ToggleButton {
         this._active = true;
         this.element.classList.add('active');
         this.element.classList.add('radio-active');
-        return super.activate();
+        this.emit('change', true);  // Importante: emettiamo l'evento
+        return this;
     }
 
     deactivate() {
+        console.log('Radio deactivate called for:', this.id); // Debug
         this._active = false;
         this.element.classList.remove('active');
         this.element.classList.remove('radio-active');
-        return super.deactivate();
+        this.emit('change', false);  // Importante: emettiamo l'evento
+        return this;
     }
 
     dispose() {

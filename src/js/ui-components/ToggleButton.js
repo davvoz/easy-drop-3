@@ -52,6 +52,21 @@ export default class ToggleButton extends Toggle {
         return this;
     }
 
+    setActive(active, emitEvent = true) {
+        this.isActive = active;
+        this.element.classList.toggle('active', active);
+        this.updateLabel();
+        if (emitEvent) {
+            this.emit('change', active);
+        }
+    }
+
+    updateLabel() {
+        if (this.element) {
+            this.element.textContent = this.isActive ? this.options.activeLabel : this.options.label;
+        }
+    }
+
     onLearnStart() {
         this.element.classList.add('learning');
     }
