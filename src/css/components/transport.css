@@ -15,6 +15,7 @@
 .transport-controls {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 2.5rem;
     background: rgba(0, 0, 0, 0.2);
     padding: 1rem 2rem;
@@ -103,4 +104,53 @@
     100% {
         box-shadow: 0 0 20px rgba(74, 158, 255, 0.2);
     }
+}
+
+/* Stile per l'indicatore di tick */
+.tick-indicator {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 100%;
+    background: rgba(74, 158, 255, 0.1);
+    border-radius: 2px;
+}
+
+.tick-indicator.pulse {
+    animation: tickPulse 100ms ease-out;
+}
+
+@keyframes tickPulse {
+    0% {
+        background: rgba(74, 158, 255, 0.8);
+    }
+    100% {
+        background: rgba(74, 158, 255, 0.1);
+    }
+}
+
+/* Stile per i beat indicators */
+.beats-container {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    margin-right: 1rem;
+}
+
+.beat-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(74, 158, 255, 0.1);
+    transition: all 0.1s ease-out;
+}
+
+.beat-dot.active {
+    background: #4a9eff;
+    box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+    transform: scale(1.2);
 }

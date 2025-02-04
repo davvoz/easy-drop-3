@@ -8,8 +8,8 @@ import AudioEngine from './engines/AudioEngine.js';
 import RenderEngine from './engines/RenderEngine.js';
 import Transport from './audio-components/transport/Transport.js';
 import TransportUI from './audio-components/transport/TransportUI.js';
-import Sequence from './audio-components/sequence/Sequence.js';
-import SequenceUI from './audio-components/sequence/SequenceUI.js';
+import Sequencer from './audio-components/sequencer/Sequencer.js';
+import SequencerUI from './audio-components/sequencer/SequencerUI.js';
 
 async function initializeApp() {
     try {
@@ -72,41 +72,21 @@ async function initializeApp() {
         const transportUI = new TransportUI(transport);
         renderEngine.addComponent(transportUI);
 
-        // Create sequence
-        const sequence = new Sequence('seq-1', { length: 16 });
-        const oscTrack = sequence.addTrack('osc-1');
-        
-        // Create a simple pattern (1 = trigger, 0 = silence)
-        oscTrack.setSteps([
-            1, 0, 0, 0,  // Beat 1
-            1, 0, 0, 0,  // Beat 2
-            1, 0, 0, 0,  // Beat 3
-            1, 0, 1, 0   // Beat 4
-        ]);
-
-        // Add sequence to transport
-        transport.addSequence(sequence);
-
-        // Create sequence UI
-        const sequenceUI = new SequenceUI(sequence);
-        renderEngine.addComponent(sequenceUI);
-
-        // Listen for sequence triggers
-        sequence.on('trigger', ({ trackId, tick, data }) => {
-            if (trackId === 'osc-1') {
-                osc.triggerNote(127, 100); // velocity 127, duration 100ms
-                
-                // Highlight current step
-                const buttons = sequenceUI.gridButtons;
-                buttons.forEach(btn => btn.element.classList.remove('playing'));
-                if (buttons[tick]) {
-                    buttons[tick].element.classList.add('playing');
-                }
-            }
-        });
-
         // Set up transport in AudioEngine
         audioEngine.setTransport(transport);
+
+        // Create sequencer
+        const sequencer = new Sequencer('seq-1');
+        await audioEngine.addComponent(sequencer);
+        
+        // Connect sequencer to oscillator
+        sequencer.setInstrument(osc);
+        
+        // Add sequencer to transport
+        transport.addSequence(sequencer);
+        
+        const sequencerUI = new SequencerUI(sequencer);
+        renderEngine.addComponent(sequencerUI);
 
         // Now you can use transport controls to start/stop the sequence
         transport.setBPM(120);

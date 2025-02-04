@@ -23,6 +23,10 @@ export default class BaseConfig extends EventEmitter {
         return this._config.get(key);
     }
 
+    getAll() {
+        return Object.fromEntries(this._config);
+    }
+
     savePreset(name, config) {
         this._presets.set(name, {...Object.fromEntries(this._config), ...config});
     }

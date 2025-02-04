@@ -5,11 +5,11 @@ export default class Transport extends AbstractAudioComponent {
         super(id);
         this.bpm = 120;
         this.isPlaying = false;
-        this.currentBeat = 0;
-        this.timeoutId = null;
         this.sequences = new Map();
-        this.ticksPerBeat = 4; // subdivisions per beat
-        this.currentTick = 0;
+        this._currentTick = 0;
+        this._lastTime = 0;
+        this._ppqn = 24; // Pulses Per Quarter Note (standard MIDI)
+        this.updateTickInterval();
     }
 
     async setup() {
@@ -24,20 +24,25 @@ export default class Transport extends AbstractAudioComponent {
         this.stop();
     }
 
+    updateTickInterval() {
+        // Calcola millisecondi per tick
+        const minuteInMs = 60000;
+        const quarterNoteInMs = minuteInMs / this.bpm;
+        this._tickInterval = quarterNoteInMs / this._ppqn;
+    }
+
     setBPM(value) {
         this.bpm = Math.max(30, Math.min(300, value));
+        this.updateTickInterval();
         this.emit('bpm-change', this.bpm);
-        
-        if (this.isPlaying) {
-            this.stop();
-            this.start();
-        }
     }
 
     start() {
         if (this.isPlaying) return;
         
         this.isPlaying = true;
+        this._lastTime = performance.now();
+        this._currentTick = 0;
         this._tick();
         this.emit('play');
     }
@@ -46,10 +51,7 @@ export default class Transport extends AbstractAudioComponent {
         if (!this.isPlaying) return;
         
         this.isPlaying = false;
-        if (this.timeoutId) {
-            clearTimeout(this.timeoutId);
-        }
-        this.currentBeat = 0;
+        this._currentTick = 0;
         this.emit('stop');
     }
 
@@ -64,18 +66,31 @@ export default class Transport extends AbstractAudioComponent {
     _tick() {
         if (!this.isPlaying) return;
 
-        const beat = Math.floor(this.currentTick / this.ticksPerBeat);
-        this.sequences.forEach(sequence => {
-            sequence.processTick(beat, this.currentTick);
-        });
+        const now = performance.now();
+        const elapsed = now - this._lastTime;
+        
+        const ticksDue = Math.floor(elapsed / this._tickInterval);
+        
+        if (ticksDue > 0) {
+            this._lastTime = now - (elapsed % this._tickInterval);
+            
+            for (let i = 0; i < ticksDue; i++) {
+                this._currentTick++;
+                
+                // Emit tick event
+                this.emit('tick', this._currentTick);
+                
+                this.sequences.forEach(sequence => {
+                    sequence.processTick(this._currentTick);
+                });
 
-        this.emit('tick', {
-            beat,
-            tick: this.currentTick
-        });
+                // Log debug ogni quarto
+                if (this._currentTick % this._ppqn === 0) {
+                    console.debug('Quarter note:', this._currentTick / this._ppqn);
+                }
+            }
+        }
 
-        this.currentTick = (this.currentTick + 1) % (4 * this.ticksPerBeat);
-        const interval = (60 / this.bpm / this.ticksPerBeat) * 1000;
-        this.timeoutId = setTimeout(() => this._tick(), interval);
+        requestAnimationFrame(() => this._tick());
     }
 }

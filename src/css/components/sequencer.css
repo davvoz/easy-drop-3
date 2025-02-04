@@ -1,0 +1,43 @@
+.sequencer-component {
+    background: #1a1a1a;
+    padding: 1rem;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.sequencer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.step-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    border: none;
+    background: #2a2a2a;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+.step-button:hover {
+    background: #333;
+}
+
+.step-button.active {
+    background: #4a9eff;
+    box-shadow: 0 0 15px rgba(74, 158, 255, 0.3);
+}
+
+.step-button.current {
+    border: 2px solid #fff;
+}
+
+.step-button.active.current {
+    background: #7ab9ff;
+    box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+}

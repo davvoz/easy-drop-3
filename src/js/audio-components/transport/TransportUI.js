@@ -15,6 +15,24 @@ export default class TransportUI extends AbstractAudioComponentUI {
         const controlsContainer = document.createElement('div');
         controlsContainer.className = 'transport-controls';
 
+        // Add tick indicator
+        const tickIndicator = document.createElement('div');
+        tickIndicator.className = 'tick-indicator';
+        controlsContainer.appendChild(tickIndicator);
+
+        // Add beat indicators container
+        const beatsContainer = document.createElement('div');
+        beatsContainer.className = 'beats-container';
+        
+        // Create 4 beat indicators
+        for (let i = 0; i < 4; i++) {
+            const beatDot = document.createElement('div');
+            beatDot.className = 'beat-dot';
+            beatsContainer.appendChild(beatDot);
+        }
+        
+        controlsContainer.appendChild(beatsContainer);
+
         // BPM Knob
         const bpmContainer = document.createElement('div');
         bpmContainer.className = 'knob-container bpm-knob';
@@ -38,6 +56,7 @@ export default class TransportUI extends AbstractAudioComponentUI {
         // Append controls
         this.container.appendChild(bpmContainer);
         playButton.render(this.container);
+        this.container.appendChild(controlsContainer);
     }
 
     setupEventListeners() {
@@ -67,6 +86,24 @@ export default class TransportUI extends AbstractAudioComponentUI {
             playButton.element.textContent = '▶';
             playButton.element.classList.remove('playing');
             isPlaying = false;
+        });
+
+        // Listen for tick events
+        this.component.on('tick', (tick) => {
+            if (tick % this.component._ppqn === 0) {  // Only on quarter notes
+                const indicator = this.container.querySelector('.tick-indicator');
+                indicator.classList.remove('pulse');
+                void indicator.offsetWidth; // Trigger reflow
+                indicator.classList.add('pulse');
+
+                const beatIndex = Math.floor(tick / this.component._ppqn) % 4;
+                const beatDots = this.container.querySelectorAll('.beat-dot');
+                
+                // Reset all dots
+                beatDots.forEach(dot => dot.classList.remove('active'));
+                // Activate current beat dot
+                beatDots[beatIndex].classList.add('active');
+            }
         });
     }
 }
