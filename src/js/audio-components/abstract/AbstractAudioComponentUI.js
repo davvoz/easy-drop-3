@@ -7,10 +7,12 @@ export default class AbstractAudioComponentUI extends EventEmitter {
         this.container = null;
         this.options = {
             className: 'audio-component',
+            draggable: true,
             ...options
         };
 
         this.controls = new Map();
+        this.dragOffset = { x: 0, y: 0 };
     }
 
     render(container) {
@@ -20,6 +22,12 @@ export default class AbstractAudioComponentUI extends EventEmitter {
         
         this.container = container;
         this.container.className = this.options.className;
+        
+        if (this.options.draggable) {
+            this.container.style.position = 'absolute';
+            this.container.style.cursor = 'move';
+            this.setupDragHandlers();
+        }
         
         try {
             this.buildUI();
@@ -40,6 +48,35 @@ export default class AbstractAudioComponentUI extends EventEmitter {
     setupEventListeners() {
         // Override in subclass to set up event listeners
         throw new Error('setupEventListeners() must be implemented by subclass');
+    }
+
+    setupDragHandlers() {
+        const onMouseDown = (e) => {
+            // Verifica se il click è avvenuto sulla toolbar o su aree non interattive
+            const isToolbarClick = e.target.closest('.piano-roll-toolbar');
+            const isInteractiveElement = e.target.closest('input, button, select, .note-block, .velocity-grid, .resize-handle, .piano-roll-grid');
+            
+            // Procedi con il drag solo se il click è sulla toolbar o su aree non interattive
+            if (!isInteractiveElement || isToolbarClick) {
+                this.dragOffset.x = e.clientX - this.container.offsetLeft;
+                this.dragOffset.y = e.clientY - this.container.offsetTop;
+                
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            }
+        };
+
+        const onMouseMove = (e) => {
+            this.container.style.left = `${e.clientX - this.dragOffset.x}px`;
+            this.container.style.top = `${e.clientY - this.dragOffset.y}px`;
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        this.container.addEventListener('mousedown', onMouseDown);
     }
 
     addControl(id, control) {

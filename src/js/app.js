@@ -44,7 +44,7 @@ async function initializeApp() {
         await audioEngine.initialize();
 
         // Create and initialize components
-        const mixer = new Mixer('mainMixer', 4);
+        const mixer = new Mixer('mainMixer', 1);
         await audioEngine.addComponent(mixer);
         audioEngine.setMixer(mixer);
         mixer.connect(audioEngine.audioContext.destination);
@@ -78,20 +78,20 @@ async function initializeApp() {
         audioEngine.setTransport(transport);
 
         // Create sequencer with custom grid size
-        const sequencer = new Sequencer('seq-1', {
-            rows: 4,      // Puoi modificare questi valori
-            columns: 8,   // per ottenere griglie diverse
-        });
-        await audioEngine.addComponent(sequencer);
+        // const sequencer = new Sequencer('seq-1', {
+        //     rows: 4,      // Puoi modificare questi valori
+        //     columns: 8,   // per ottenere griglie diverse
+        // });
+        // await audioEngine.addComponent(sequencer);
         
-        // Connect sequencer to oscillator
-        sequencer.setInstrument(osc);
+        // // Connect sequencer to oscillator
+        // sequencer.setInstrument(osc);
         
-        // Add sequencer to transport
-        transport.addSequence(sequencer);
+        // // Add sequencer to transport
+        // transport.addSequence(sequencer);
         
-        const sequencerUI = new SequencerUI(sequencer);
-        renderEngine.addComponent(sequencerUI);
+        // const sequencerUI = new SequencerUI(sequencer);
+        // renderEngine.addComponent(sequencerUI);
 
         // Create piano roll with appropriate settings
         const pianoRoll = new PianoRoll('piano-1', {
@@ -100,7 +100,7 @@ async function initializeApp() {
             startNote: 48, // C3
             pixelsPerStep: 30,
             stepsPerBeat: 4,
-            beatsPerBar: 4
+            beatsPerBar: 1
         });
         await audioEngine.addComponent(pianoRoll);
 

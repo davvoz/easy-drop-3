@@ -25,10 +25,19 @@
     background: var(--bg-darker);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    overflow: hidden;
+    overflow: hidden; /* Changed from auto to hidden */
 }
 
 .piano-roll-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    padding-top: 0; /* Rimuovere lo spazio precedentemente occupato dalla timeline */
+}
+
+.piano-roll-main {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -38,52 +47,78 @@
 
 .piano-roll-grid-container {
     flex: 1;
-    overflow: auto;
     position: relative;
+    overflow: auto;
     border-top: 1px solid var(--border-color);
+    scroll-behavior: smooth;
+    cursor: default; /* Resetta il cursore ereditato dal draggable */
 }
 
 .piano-roll-grid {
     position: relative;
     display: grid;
     background: var(--bg-dark);
-    grid-gap: 0;
-    width: 100%;
+    background-image:
+        linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    background-size: var(--cell-height) var(--cell-height);
+    cursor: crosshair;
+    min-width: max-content;
     height: 100%;
-    min-width: fit-content;
 }
 
 /* Toolbar */
 .piano-roll-toolbar {
-    height: 40px;
+    height: 44px;
     background: var(--bg-darker);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    padding: 0 10px;
-    gap: 10px;
+    padding: 0 12px;
+    gap: 8px;
+    cursor: move; /* Indica che la toolbar può essere usata per il drag */
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border-color);
+    margin: 0 4px;
 }
 
 .tool-button {
-    padding: 6px 12px;
-    background: #333;
-    border: 1px solid #444;
+    height: 32px;
+    padding: 0 12px;
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: 4px;
-    color: #fff;
+    color: #888;
     cursor: pointer;
     font-size: 12px;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    transition: all 0.2s ease;
 }
 
 .tool-button:hover {
-    background: #444;
+    background: rgba(255,255,255,0.05);
+    color: #fff;
 }
 
 .tool-button.active {
     background: var(--primary-color);
-    border-color: var(--primary-color);
+    border-color: color-mix(in srgb, var(--primary-color) 80%, white);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.tool-icon {
+    font-size: 16px;
+}
+
+.tool-label {
+    font-weight: 500;
 }
 
 .keys-grid-container {
@@ -93,42 +128,16 @@
     overflow: hidden;
 }
 
+/* Rimuovere le seguenti sezioni: */
 /* Timeline */
-.timeline {
-    display: grid;
-    grid-template-columns: var(--piano-key-width) 1fr;
-    height: 30px;
-    background: var(--bg-darker);
-    border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 5;
-}
-
-.timeline-markers {
-    background: var(--bg-dark);
-    display: flex;
-    overflow: hidden;
-    border-left: 1px solid var(--border-color);
-}
-
-.timeline-marker {
-    height: 100%;
-    min-width: var(--cell-height);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    font-size: 11px;
-    font-weight: 500;
-    border-right: 1px solid #222;
-    flex-shrink: 0;
-}
-
-.timeline-marker.bar {
-    color: #888;
-    border-right: 1px solid #444;
-    background: rgba(255,255,255,0.02);
+.piano-roll-timeline,
+.timeline,
+.timeline-markers,
+.timeline-marker,
+.timeline-bar,
+.bar-number,
+.beat-marker {
+    display: none;
 }
 
 /* Grid */
@@ -140,49 +149,31 @@
 }
 
 .piano-roll-grid {
-    display: grid;
-    grid-template-rows: repeat(var(--rows), var(--cell-height));
-    grid-template-columns: repeat(var(--columns), var(--cell-height));
     position: relative;
     min-width: 100%;
     height: 100%;
     background-color: var(--bg-dark);
+    /* Simplified grid lines */
     background-image:
-        linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-    background-size: var(--cell-height) var(--cell-height);
+        /* Vertical lines for beats */
+        linear-gradient(to right, 
+            var(--grid-color) 1px, 
+            transparent 1px
+        ),
+        /* Horizontal lines for notes */
+        linear-gradient(to bottom, 
+            var(--grid-color) 1px, 
+            transparent 1px
+        );
 }
 
-.grid-cell {
-    position: relative;
-    width: var(--cell-height);
-    height: var(--cell-height);
-    border-right: 1px solid var(--grid-color);
-    border-bottom: 1px solid var(--grid-color);
-    box-sizing: border-box;
-    cursor: pointer;
-}
-
-.grid-cell:hover {
-    background: rgba(255,255,255,0.05);
-}
-
-/* Rimuovere le classi non più necessarie */
-.grid-cell.black-note {
-    display: none;
-}
-
-/* Aggiungere stili per le divisioni delle battute */
-.grid-cell.bar-start {
-    border-left: 1px solid rgba(255,255,255,0.2);
-}
-
-.grid-cell.beat-start {
-    border-left: 1px solid rgba(255,255,255,0.1);
-}
-
+/* Remove all grid-cell related styles */
+.grid-cell,
+.grid-cell.black-note,
+.grid-cell.bar-start,
+.grid-cell.beat-start,
 .grid-cell.active {
-    background: rgba(74, 158, 255, 0.2);
+    display: none;
 }
 
 .note-block {
@@ -197,6 +188,105 @@
     cursor: pointer;
     z-index: 3;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+.velocity-lane {
+    height: 120px; /* Aumentato per maggiore precisione */
+    background: var(--bg-darker);
+    border-top: 1px solid var(--border-color);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: visible; /* Cambiato da hidden a visible */
+}
+
+.velocity-grid {
+    flex: 1;
+    background: var(--bg-dark);
+    position: relative; /* Cambiato da fixed a relative */
+    min-height: 100%;
+    width: 100%;
+    background-image: 
+        /* Vertical grid lines */
+        linear-gradient(90deg, 
+            rgba(255,255,255,0.05) 1px, 
+            transparent 1px
+        ),
+        /* Horizontal grid lines at 25%, 50%, 75% */
+        linear-gradient(0deg,
+            transparent 0%,
+            transparent calc(25% - 1px),
+            rgba(255,255,255,0.1) 25%,
+            transparent calc(25% + 1px),
+            transparent calc(50% - 1px),
+            rgba(255,255,255,0.1) 50%,
+            transparent calc(50% + 1px),
+            transparent calc(75% - 1px),
+            rgba(255,255,255,0.1) 75%,
+            transparent calc(75% + 1px),
+            transparent 100%
+        );
+    cursor: ns-resize;
+    width: 100%;
+}
+
+.velocity-bar {
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(to bottom,
+        color-mix(in srgb, var(--primary-color) 80%, white) 0%,
+        var(--primary-color) 100%
+    );
+    border-radius: 2px 2px 0 0;
+    width: var(--cell-height); /* Aggiungi width esplicita */
+    opacity: 0.9;
+    transition: height 0.1s ease-out;
+    z-index: 1; /* Aggiungi z-index */
+}
+
+.velocity-value {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.velocity-bar:hover .velocity-value {
+    opacity: 1;
+}
+
+.velocity-bar.selected {
+    border: 2px solid #fff;
+    border-bottom: none;
+}
+
+/* Update scrollbars to work with new layout */
+.piano-roll-grid-container::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.piano-roll-grid-container::-webkit-scrollbar-track {
+    background: var(--bg-darker);
+}
+
+.piano-roll-grid-container::-webkit-scrollbar-thumb {
+    background: #444;
+    border: 3px solid var(--bg-darker);
+    border-radius: 6px;
+}
+
+/* Remove old velocity styling */
+.velocity-bars {
+    display: none;
 }
 
 .note-block:hover {
@@ -258,4 +348,75 @@
     background: var(--primary-color);
     pointer-events: none;
     z-index: 10;
+}
+
+/* Tool-specific cursors */
+[data-tool="erase"] .piano-roll-grid {
+    cursor: no-drop;
+}
+
+[data-tool="select"] .piano-roll-grid {
+    cursor: default;
+}
+
+/* Velocity mode styling */
+.velocity-mode .note-block {
+    background: linear-gradient(to right, 
+        var(--primary-color) 0%,
+        color-mix(in srgb, var(--primary-color) 60%, white) 100%
+    );
+}
+
+.beats-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+}
+
+.beats-label {
+    color: #888;
+    font-size: 12px;
+}
+
+.beats-select {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+}
+
+.beats-select:hover {
+    border-color: var(--primary-color);
+}
+
+.beats-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+.velocity-markers {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 30px;
+    background: var(--bg-darker);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 10px;
+    color: #888;
+    z-index: 2;
+}
+
+.velocity-marker {
+    padding: 2px 4px;
+    text-align: right;
 }
