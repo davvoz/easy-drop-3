@@ -61,12 +61,11 @@ export default class AbstractAudioComponentUI extends EventEmitter {
 
     setupDragHandlers() {
         const onMouseDown = (e) => {
-            // Verifica se il click è avvenuto sulla toolbar o su aree non interattive
-            const isToolbarClick = e.target.closest('.piano-roll-toolbar');
-            const isInteractiveElement = e.target.closest('input, button, select, .note-block, .velocity-grid, .resize-handle, .piano-roll-grid');
+            // Verifica se il click è avvenuto su elementi interattivi
+            const isInteractiveElement = e.target.closest('.knob-body, .knob-container, input, button, select, .note-block, .velocity-grid, .resize-handle, .piano-roll-grid, .midi-slider');
             
-            // Procedi con il drag solo se il click è sulla toolbar o su aree non interattive
-            if (!isInteractiveElement || isToolbarClick) {
+            // Procedi con il drag solo se il click NON è su elementi interattivi
+            if (!isInteractiveElement) {
                 this.dragOffset.x = e.clientX - this.container.offsetLeft;
                 this.dragOffset.y = e.clientY - this.container.offsetTop;
                 

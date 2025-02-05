@@ -344,10 +344,10 @@
     position: absolute;
     top: 0;
     width: 2px;
-    height: 100%;
     background: var(--primary-color);
     pointer-events: none;
     z-index: 10;
+    /* Rimuoviamo height: 100% poiché verrà impostata via JavaScript */
 }
 
 /* Tool-specific cursors */
@@ -419,4 +419,209 @@
 .velocity-marker {
     padding: 2px 4px;
     text-align: right;
+}
+
+/* ...existing code... */
+
+.patterns-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+}
+
+.patterns-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.pattern-button {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: #888;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.pattern-button:hover {
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.pattern-button.active {
+    background: var(--primary-color);
+    border-color: color-mix(in srgb, var(--primary-color) 80%, white);
+    color: #fff;
+}
+
+.pattern-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pattern-clear,
+.pattern-copy {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.pattern-clear:hover,
+.pattern-copy:hover {
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.pattern-copy-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.pattern-copy-dialog .dialog-content {
+    background: var(--bg-darker);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pattern-copy-dialog h3 {
+    color: #fff;
+    margin: 0;
+    font-size: 14px;
+}
+
+.pattern-copy-dialog .dialog-close {
+    padding: 8px 16px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: #888;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pattern-copy-dialog .dialog-close:hover {
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.patterns-label {
+    color: #888;
+    font-size: 12px;
+}
+
+.patterns-row {
+    display: flex;
+    gap: 4px;
+}
+
+.pattern-slot {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: #888;
+    cursor: pointer;
+    font-size: 12px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.pattern-slot:hover {
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.pattern-slot.active {
+    background: var(--primary-color);
+    border-color: color-mix(in srgb, var(--primary-color) 80%, white);
+    color: #fff;
+}
+
+.pattern-slot.drop-target {
+    border: 2px solid var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 20%, var(--bg-dark));
+}
+
+.pattern-menu {
+    position: absolute;
+    display: none;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px;
+    gap: 4px;
+    margin-top: 4px;
+    z-index: 100;
+}
+
+.pattern-menu button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #888;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pattern-menu button:hover {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.pattern-ghost {
+    position: fixed;
+    pointer-events: none;
+    padding: 8px 12px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+/* Remove old pattern copy dialog styles */
+.pattern-copy-dialog,
+.pattern-copy-dialog .dialog-content,
+.pattern-copy-dialog h3,
+.pattern-copy-dialog .dialog-close {
+    display: none;
 }

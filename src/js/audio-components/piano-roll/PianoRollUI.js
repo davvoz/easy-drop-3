@@ -16,11 +16,28 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
             selection: new Set(),
             resizingNote: null,
             clipboard: [],
-            velocityMode: false
+            velocityMode: false,
+            currentPattern: 0
         };
 
         this.component.on('beatsChanged', () => {
             this.buildGrid();
+            this.refreshNotes();
+        });
+
+        this.component.on('patternChanged', ({ index, notes, beatsPerBar }) => {
+            this.state.currentPattern = index;
+            // Aggiorna il select delle battute con il valore del nuovo pattern
+            const beatsSelect = this.container.querySelector('.beats-select');
+            if (beatsSelect) {
+                beatsSelect.value = beatsPerBar;
+            }
+            this.buildToolbar();
+            this.buildGrid(); // Ricostruisci la griglia con le nuove dimensioni
+            this.refreshNotes();
+        });
+
+        this.component.on('patternCopied', () => {
             this.refreshNotes();
         });
     }
@@ -92,7 +109,9 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
             { type: 'separator' },
             { id: 'velocity', icon: '📊', label: 'Velocity', tooltip: 'Velocity mode (V)', toggle: true, active: this.state.velocityMode },
             { type: 'separator' },
-            { type: 'beats-control' }
+            { type: 'beats-control' },
+            { type: 'separator' },
+            { type: 'patterns-control' }
         ];
 
         toolbar.innerHTML = '';
@@ -107,11 +126,12 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
             if (tool.type === 'beats-control') {
                 const beatsControl = document.createElement('div');
                 beatsControl.className = 'beats-control';
+                const currentBeats = this.component.patterns[this.state.currentPattern].beatsPerBar;
                 beatsControl.innerHTML = `
                     <span class="beats-label">Bar:</span>
                     <select class="beats-select">
                         ${[1,2,3,4,5,6,7,8,9,10,12,16].map(num => 
-                            `<option value="${num}" ${num === this.component.options.beatsPerBar ? 'selected' : ''}>
+                            `<option value="${num}" ${num === currentBeats ? 'selected' : ''}>
                                 ${num}
                             </option>`
                         ).join('')}
@@ -124,6 +144,109 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
                 });
                 
                 toolbar.appendChild(beatsControl);
+                return;
+            }
+
+            if (tool.type === 'patterns-control') {
+                const patternsControl = document.createElement('div');
+                patternsControl.className = 'patterns-control';
+                patternsControl.innerHTML = `
+                    <div class="patterns-label">Pattern:</div>
+                    <div class="patterns-row">
+                        ${Array(5).fill().map((_, i) => `
+                            <div class="pattern-slot ${i === this.state.currentPattern ? 'active' : ''}" 
+                                 data-pattern="${i}" title="Right-click for options">
+                                <span class="pattern-number">${i + 1}</span>
+                                <div class="pattern-menu">
+                                    <button class="pattern-clear" title="Clear pattern">🗑️</button>
+                                    <button class="pattern-duplicate" title="Duplicate pattern">📋</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                // Event listeners per i pattern
+                patternsControl.querySelectorAll('.pattern-slot').forEach(slot => {
+                    // Click to select pattern
+                    slot.addEventListener('click', (e) => {
+                        if (e.target.closest('.pattern-menu')) return;
+                        const patternIndex = parseInt(slot.dataset.pattern);
+                        this.component.setPattern(patternIndex);
+                    });
+
+                    // Context menu
+                    slot.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        const menu = slot.querySelector('.pattern-menu');
+                        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+                    });
+
+                    // Clear pattern
+                    slot.querySelector('.pattern-clear').addEventListener('click', () => {
+                        const patternIndex = parseInt(slot.dataset.pattern);
+                        this.component.clearPattern(patternIndex);
+                    });
+
+                    // Duplicate pattern (drag & drop)
+                    const duplicateBtn = slot.querySelector('.pattern-duplicate');
+                    duplicateBtn.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        const sourcePattern = parseInt(slot.dataset.pattern);
+                        
+                        const ghost = document.createElement('div');
+                        ghost.className = 'pattern-ghost';
+                        ghost.textContent = `Pattern ${sourcePattern + 1}`;
+                        document.body.appendChild(ghost);
+
+                        const moveGhost = (moveE) => {
+                            ghost.style.left = `${moveE.clientX + 10}px`;
+                            ghost.style.top = `${moveE.clientY + 10}px`;
+                            
+                            // Highlight potential drop targets
+                            patternsControl.querySelectorAll('.pattern-slot').forEach(target => {
+                                const rect = target.getBoundingClientRect();
+                                if (moveE.clientX >= rect.left && moveE.clientX <= rect.right &&
+                                    moveE.clientY >= rect.top && moveE.clientY <= rect.bottom) {
+                                    target.classList.add('drop-target');
+                                } else {
+                                    target.classList.remove('drop-target');
+                                }
+                            });
+                        };
+
+                        const finishDrag = (upE) => {
+                            document.removeEventListener('mousemove', moveGhost);
+                            document.removeEventListener('mouseup', finishDrag);
+                            document.body.removeChild(ghost);
+
+                            const dropTarget = patternsControl.querySelector('.pattern-slot.drop-target');
+                            if (dropTarget) {
+                                const targetPattern = parseInt(dropTarget.dataset.pattern);
+                                if (sourcePattern !== targetPattern) {
+                                    this.component.copyPattern(sourcePattern, targetPattern);
+                                }
+                                dropTarget.classList.remove('drop-target');
+                            }
+                        };
+
+                        document.addEventListener('mousemove', moveGhost);
+                        document.addEventListener('mouseup', finishDrag);
+                        
+                        moveGhost(e); // Initial position
+                    });
+                });
+
+                // Close menus when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.pattern-menu')) {
+                        patternsControl.querySelectorAll('.pattern-menu').forEach(menu => {
+                            menu.style.display = 'none';
+                        });
+                    }
+                });
+
+                toolbar.appendChild(patternsControl);
                 return;
             }
 
@@ -675,6 +798,9 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
     updatePlayhead(position) {
         const playhead = this.container.querySelector('.playhead');
         if (playhead) {
+            const grid = this.container.querySelector('.piano-roll-grid');
+            // Imposta l'altezza del playhead uguale all'altezza totale della griglia
+            playhead.style.height = `${grid.offsetHeight}px`;
             playhead.style.left = `${position * this.component.options.pixelsPerStep}px`;
         }
     }

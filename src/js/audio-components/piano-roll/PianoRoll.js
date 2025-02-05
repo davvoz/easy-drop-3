@@ -13,7 +13,12 @@ export default class PianoRoll extends AbstractAudioComponent {
             ...options
         };
         
-        this.notes = new Map(); // Using Map for O(1) lookups
+        this.patterns = Array(5).fill().map(() => ({
+            notes: new Map(),
+            beatsPerBar: options.beatsPerBar || 4
+        }));
+        this.currentPattern = 0;
+        this.notes = this.patterns[0].notes;
         this.playhead = 0;
         this.instrument = null;
         this.isPlaying = false;
@@ -60,8 +65,9 @@ export default class PianoRoll extends AbstractAudioComponent {
         return this.notes.get(`${row}-${col}`);
     }
 
+    // Override del metodo getAllNotes per supportare i pattern
     getAllNotes() {
-        return Array.from(this.notes.values());
+        return Array.from(this.patterns[this.currentPattern].notes.values());
     }
 
     // Playback
@@ -185,15 +191,13 @@ export default class PianoRoll extends AbstractAudioComponent {
             return;
         }
 
-        const oldBeats = this.options.beatsPerBar;
+        // Aggiorna il numero di battute per il pattern corrente
+        this.patterns[this.currentPattern].beatsPerBar = beats;
         this.options.beatsPerBar = beats;
 
-        // Ricalcola le colonne mantenendo lo stesso numero di battute
-        const currentBars = Math.ceil(this.options.columns / (this.options.stepsPerBeat * oldBeats));
-        const newColumns = currentBars * this.options.stepsPerBeat * beats;
-        
-        // Assicurati che ci siano abbastanza colonne per tutti i beats
-        this.options.columns = Math.max(newColumns, beats * this.options.stepsPerBeat * 4); // minimo 4 battute
+        // Ricalcola le colonne
+        const newColumns = beats * this.options.stepsPerBeat * 4; // minimo 4 battute
+        this.options.columns = newColumns;
         
         // Aggiorna la posizione del playhead se necessario
         this.playhead = Math.min(this.playhead, this.options.columns - 1);
@@ -201,7 +205,7 @@ export default class PianoRoll extends AbstractAudioComponent {
         this.emit('beatsChanged', {
             beats,
             columns: this.options.columns,
-            bars: currentBars
+            bars: 4 // Fissiamo a 4 battute per ora
         });
     }
 
@@ -215,5 +219,62 @@ export default class PianoRoll extends AbstractAudioComponent {
         }
         
         this.emit('playheadMoved', this.playhead);
+    }
+
+    // Nuovo metodo per cambiare pattern
+    setPattern(index) {
+        if (index < 0 || index >= this.patterns.length) return false;
+        this.currentPattern = index;
+        this.notes = this.patterns[index].notes;
+        
+        // Aggiorna il numero di battute in base al pattern selezionato
+        const pattern = this.patterns[index];
+        if (pattern.beatsPerBar !== this.options.beatsPerBar) {
+            this.options.beatsPerBar = pattern.beatsPerBar;
+            this.options.columns = pattern.beatsPerBar * this.options.stepsPerBeat * 4;
+        }
+        
+        this.emit('patternChanged', { 
+            index, 
+            notes: Array.from(this.notes.values()),
+            beatsPerBar: pattern.beatsPerBar
+        });
+        return true;
+    }
+
+    // Nuovo metodo per copiare un pattern
+    copyPattern(sourceIndex, targetIndex) {
+        if (sourceIndex < 0 || sourceIndex >= this.patterns.length ||
+            targetIndex < 0 || targetIndex >= this.patterns.length) return false;
+            
+        const sourcePattern = this.patterns[sourceIndex];
+        this.patterns[targetIndex] = {
+            notes: new Map(sourcePattern.notes),
+            beatsPerBar: sourcePattern.beatsPerBar
+        };
+        
+        this.emit('patternCopied', { sourceIndex, targetIndex });
+        return true;
+    }
+
+    // Nuovo metodo per cancellare un pattern
+    clearPattern(index) {
+        if (index < 0 || index >= this.patterns.length) return false;
+        // Mantieni il beatsPerBar quando pulisci il pattern
+        const beatsPerBar = this.patterns[index].beatsPerBar;
+        this.patterns[index] = {
+            notes: new Map(),
+            beatsPerBar
+        };
+        
+        if (this.currentPattern === index) {
+            this.notes = this.patterns[index].notes;
+            this.emit('patternChanged', { 
+                index, 
+                notes: [], 
+                beatsPerBar 
+            });
+        }
+        return true;
     }
 }
