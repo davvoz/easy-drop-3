@@ -625,3 +625,36 @@
 .pattern-copy-dialog .dialog-close {
     display: none;
 }
+
+/* Aggiorna gli stili per i pattern slot che ora sono Button components */
+.pattern-slot {
+    width: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    position: relative;
+}
+
+.pattern-slot.active {
+    background: var(--primary-color) !important;
+    border-color: color-mix(in srgb, var(--primary-color) 80%, white) !important;
+    color: #fff !important;
+}
+
+.pattern-slot.flash-button {
+    animation: none !important; /* Disabilita l'animazione di flash per i pattern */
+}
+
+.pattern-slot .pattern-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-darker);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px;
+    gap: 4px;
+    margin-top: 4px;
+    z-index: 100;
+}

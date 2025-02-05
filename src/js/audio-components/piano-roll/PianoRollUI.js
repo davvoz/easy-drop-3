@@ -1,4 +1,5 @@
 import AbstractAudioComponentUI from '../abstract/AbstractAudioComponentUI.js';
+import Button from '../../ui-components/Button.js';
 
 export default class PianoRollUI extends AbstractAudioComponentUI {
     constructor(pianoRoll, options = {}) {
@@ -40,6 +41,8 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
         this.component.on('patternCopied', () => {
             this.refreshNotes();
         });
+
+        this.patternButtons = [];
     }
 
     // Required method from AbstractAudioComponentUI
@@ -152,89 +155,51 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
                 patternsControl.className = 'patterns-control';
                 patternsControl.innerHTML = `
                     <div class="patterns-label">Pattern:</div>
-                    <div class="patterns-row">
-                        ${Array(5).fill().map((_, i) => `
-                            <div class="pattern-slot ${i === this.state.currentPattern ? 'active' : ''}" 
-                                 data-pattern="${i}" title="Right-click for options">
-                                <span class="pattern-number">${i + 1}</span>
-                                <div class="pattern-menu">
-                                    <button class="pattern-clear" title="Clear pattern">🗑️</button>
-                                    <button class="pattern-duplicate" title="Duplicate pattern">📋</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
+                    <div class="patterns-row"></div>
                 `;
 
-                // Event listeners per i pattern
-                patternsControl.querySelectorAll('.pattern-slot').forEach(slot => {
-                    // Click to select pattern
-                    slot.addEventListener('click', (e) => {
-                        if (e.target.closest('.pattern-menu')) return;
-                        const patternIndex = parseInt(slot.dataset.pattern);
-                        this.component.setPattern(patternIndex);
+                const patternsRow = patternsControl.querySelector('.patterns-row');
+
+                // Crea i pulsanti dei pattern usando il nostro componente Button
+                this.patternButtons = Array(5).fill().map((_, i) => {
+                    const button = new Button(`pattern-${i}`, {
+                        label: `${i + 1}`,
+                        className: `pattern-slot ${i === this.state.currentPattern ? 'active' : ''}`
                     });
 
-                    // Context menu
-                    slot.addEventListener('contextmenu', (e) => {
+                    button.on('trigger', () => {
+                        this.component.setPattern(i);
+                    });
+
+                    button.render(patternsRow);
+                    
+                    // Aggiungi il menu contestuale
+                    const menu = document.createElement('div');
+                    menu.className = 'pattern-menu';
+                    menu.innerHTML = `
+                        <button class="pattern-clear" title="Clear pattern">🗑️</button>
+                        <button class="pattern-duplicate" title="Duplicate pattern">📋</button>
+                    `;
+                    button.element.appendChild(menu);
+
+                    // Eventi del menu contestuale
+                    button.element.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
-                        const menu = slot.querySelector('.pattern-menu');
                         menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
                     });
 
-                    // Clear pattern
-                    slot.querySelector('.pattern-clear').addEventListener('click', () => {
-                        const patternIndex = parseInt(slot.dataset.pattern);
-                        this.component.clearPattern(patternIndex);
+                    menu.querySelector('.pattern-clear').addEventListener('click', () => {
+                        this.component.clearPattern(i);
                     });
 
                     // Duplicate pattern (drag & drop)
-                    const duplicateBtn = slot.querySelector('.pattern-duplicate');
+                    const duplicateBtn = menu.querySelector('.pattern-duplicate');
                     duplicateBtn.addEventListener('mousedown', (e) => {
                         e.stopPropagation();
-                        const sourcePattern = parseInt(slot.dataset.pattern);
-                        
-                        const ghost = document.createElement('div');
-                        ghost.className = 'pattern-ghost';
-                        ghost.textContent = `Pattern ${sourcePattern + 1}`;
-                        document.body.appendChild(ghost);
-
-                        const moveGhost = (moveE) => {
-                            ghost.style.left = `${moveE.clientX + 10}px`;
-                            ghost.style.top = `${moveE.clientY + 10}px`;
-                            
-                            // Highlight potential drop targets
-                            patternsControl.querySelectorAll('.pattern-slot').forEach(target => {
-                                const rect = target.getBoundingClientRect();
-                                if (moveE.clientX >= rect.left && moveE.clientX <= rect.right &&
-                                    moveE.clientY >= rect.top && moveE.clientY <= rect.bottom) {
-                                    target.classList.add('drop-target');
-                                } else {
-                                    target.classList.remove('drop-target');
-                                }
-                            });
-                        };
-
-                        const finishDrag = (upE) => {
-                            document.removeEventListener('mousemove', moveGhost);
-                            document.removeEventListener('mouseup', finishDrag);
-                            document.body.removeChild(ghost);
-
-                            const dropTarget = patternsControl.querySelector('.pattern-slot.drop-target');
-                            if (dropTarget) {
-                                const targetPattern = parseInt(dropTarget.dataset.pattern);
-                                if (sourcePattern !== targetPattern) {
-                                    this.component.copyPattern(sourcePattern, targetPattern);
-                                }
-                                dropTarget.classList.remove('drop-target');
-                            }
-                        };
-
-                        document.addEventListener('mousemove', moveGhost);
-                        document.addEventListener('mouseup', finishDrag);
-                        
-                        moveGhost(e); // Initial position
+                        this.startPatternDrag(i, button.element);
                     });
+
+                    return button;
                 });
 
                 // Close menus when clicking outside
@@ -270,6 +235,48 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
 
             toolbar.appendChild(button);
         });
+    }
+
+    startPatternDrag(sourcePattern, sourceElement) {
+        const ghost = document.createElement('div');
+        ghost.className = 'pattern-ghost';
+        ghost.textContent = `Pattern ${sourcePattern + 1}`;
+        document.body.appendChild(ghost);
+
+        const moveGhost = (moveE) => {
+            ghost.style.left = `${moveE.clientX + 10}px`;
+            ghost.style.top = `${moveE.clientY + 10}px`;
+            
+            // Highlight potential drop targets
+            this.patternButtons.forEach(button => {
+                const rect = button.element.getBoundingClientRect();
+                if (moveE.clientX >= rect.left && moveE.clientX <= rect.right &&
+                    moveE.clientY >= rect.top && moveE.clientY <= rect.bottom) {
+                    button.element.classList.add('drop-target');
+                } else {
+                    button.element.classList.remove('drop-target');
+                }
+            });
+        };
+
+        const finishDrag = (upE) => {
+            document.removeEventListener('mousemove', moveGhost);
+            document.removeEventListener('mouseup', finishDrag);
+            document.body.removeChild(ghost);
+
+            const dropTarget = document.querySelector('.pattern-slot.drop-target');
+            if (dropTarget) {
+                const targetPattern = parseInt(dropTarget.id.split('-')[1]);
+                if (sourcePattern !== targetPattern) {
+                    this.component.copyPattern(sourcePattern, targetPattern);
+                }
+                dropTarget.classList.remove('drop-target');
+            }
+        };
+
+        document.addEventListener('mousemove', moveGhost);
+        document.addEventListener('mouseup', finishDrag);
+        moveGhost({ clientX: sourceElement.offsetLeft, clientY: sourceElement.offsetTop });
     }
 
     toggleOption(option) {
