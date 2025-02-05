@@ -1,14 +1,48 @@
 .simple-osc-component {
-    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-    border-radius: 12px;
-    padding: 20px;
     display: flex;
-    gap: 24px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    border: 1px solid #333;
-    margin: 0 auto;
-    width: fit-content;
-    grid-template-columns: 1fr 1fr;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 300px;
+    background: var(--component-bg);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.oscillator-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sequencer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sequencer-controls {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.internal-sequencer-container {
+    min-height: 100px;
+    background: var(--bg-darker);
+    border-radius: 4px;
+}
+
+/* Stili per il sequencer integrato */
+.internal-sequencer-container .sequencer-component,
+.internal-sequencer-container .piano-roll-component {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100%;
+    border: none;
+    background: transparent;
 }
 
 .simple-osc-component .frequency-knob {

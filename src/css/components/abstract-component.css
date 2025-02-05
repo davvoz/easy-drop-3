@@ -1,0 +1,21 @@
+/* Stili comuni per il sequencer in tutti i componenti */
+.sequencer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.sequencer-controls {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.internal-sequencer-container {
+    min-height: 100px;
+    background: var(--bg-darker);
+    border-radius: 4px;
+}

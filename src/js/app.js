@@ -8,10 +8,6 @@ import AudioEngine from './engines/AudioEngine.js';
 import RenderEngine from './engines/RenderEngine.js';
 import Transport from './audio-components/transport/Transport.js';
 import TransportUI from './audio-components/transport/TransportUI.js';
-import Sequencer from './audio-components/sequencer/Sequencer.js';
-import SequencerUI from './audio-components/sequencer/SequencerUI.js';
-import PianoRoll from './audio-components/piano-roll/PianoRoll.js';
-import PianoRollUI from './audio-components/piano-roll/PianoRollUI.js';
 
 async function initializeApp() {
     try {
@@ -49,7 +45,7 @@ async function initializeApp() {
         audioEngine.setMixer(mixer);
         mixer.connect(audioEngine.audioContext.destination);
 
-        const mixerUI = new MixerUI(mixer);
+        const mixerUI = new MixerUI(mixer,{allowSequencer : false});
         renderEngine.addComponent(mixerUI);
 
         // Create oscillator
@@ -71,7 +67,7 @@ async function initializeApp() {
         const transport = new Transport('main-transport');
         await audioEngine.addComponent(transport);
         
-        const transportUI = new TransportUI(transport);
+        const transportUI = new TransportUI(transport,{allowSequencer : false});
         renderEngine.addComponent(transportUI);
 
         // Set up transport in AudioEngine
@@ -93,25 +89,20 @@ async function initializeApp() {
         // const sequencerUI = new SequencerUI(sequencer);
         // renderEngine.addComponent(sequencerUI);
 
-        // Create piano roll with appropriate settings
-        const pianoRoll = new PianoRoll('piano-1', {
-            rows: 24,      // 2 ottave
-            columns: 16,   // Una battuta
-            startNote: 48, // C3
-            pixelsPerStep: 30,
-            stepsPerBeat: 4,
-            beatsPerBar: 1
-        });
-        await audioEngine.addComponent(pianoRoll);
-
-        // Connect piano roll to oscillator
-        pianoRoll.setInstrument(osc);
-
-        // Add piano roll to transport (importante!)
-        transport.addSequence(pianoRoll);
-
-        const pianoRollUI = new PianoRollUI(pianoRoll);
-        renderEngine.addComponent(pianoRollUI);
+        // Remove standalone piano roll creation since components can now have their own
+        // const pianoRoll = new PianoRoll('piano-1', {
+        //     rows: 24,      // 2 ottave
+        //     columns: 16,   // Una battuta
+        //     startNote: 48, // C3
+        //     pixelsPerStep: 30,
+        //     stepsPerBeat: 4,
+        //     beatsPerBar: 1
+        // });
+        // await audioEngine.addComponent(pianoRoll);
+        // pianoRoll.setInstrument(osc);
+        // transport.addSequence(pianoRoll);
+        // const pianoRollUI = new PianoRollUI(pianoRoll);
+        // renderEngine.addComponent(pianoRollUI);
 
         // Now you can use transport controls to start/stop the sequence
         transport.setBPM(120);

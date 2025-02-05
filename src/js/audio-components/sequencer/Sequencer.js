@@ -32,6 +32,16 @@ export default class Sequencer extends AbstractAudioComponent {
     }
 
     processTick(tick) {
+        // Aggiungi log per debug
+        if (tick % 6 === 0) {
+            console.log('Sequencer processing tick:', {
+                tick,
+                step: this.currentStep,
+                hasInstrument: !!this.instrument,
+                activeSteps: this.grid.filter(Boolean).length
+            });
+        }
+
         // Converti i tick MIDI (24 ppqn) in step del sequencer
         if (tick % 6 === 0) {  // Ogni 6 tick = 1/16th note
             this.currentStep = (Math.floor(tick / 6) % this.steps);

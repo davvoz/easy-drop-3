@@ -5,6 +5,7 @@ export default class SequencerUI extends AbstractAudioComponentUI {
     constructor(sequencer, options = {}) {
         super(sequencer, {
             className: 'sequencer-component',
+            allowSequencer: false, // Disabilitiamo la possibilità di aggiungere sequencer a un sequencer
             ...options
         });
         this.selectedStep = null;

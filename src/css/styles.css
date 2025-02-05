@@ -86,3 +86,52 @@ body {
     margin: 10px;
     background: rgba(255,0,0,0.1);
 }
+
+button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background var(--transition-quick);
+}
+
+button:hover {
+    background: var(--color-bg-tertiary);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    background: var(--color-disabled);
+    color: var(--color-text-secondary);
+    cursor: not-allowed;
+}
+
+select {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background var(--transition-quick);
+}
+
+select:hover {
+    background: var(--color-bg-tertiary);
+}
+
+select:active {
+    transform: scale(0.98);
+}
+
+select:disabled {
+    background: var(--color-disabled);
+    color: var(--color-text-secondary);
+    cursor: not-allowed;
+}
+

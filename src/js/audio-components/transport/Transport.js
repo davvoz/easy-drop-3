@@ -55,12 +55,42 @@ export default class Transport extends AbstractAudioComponent {
         this.emit('stop');
     }
 
-    addSequence(sequence) {
-        this.sequences.set(sequence.id, sequence);
+    addSequence(sequencer) {
+        if (!this.sequences.has(sequencer.id)) {
+            this.sequences.set(sequencer.id, sequencer);
+            console.log('Sequence added to transport:', sequencer.id);
+            
+            // Se il transport è già in riproduzione, avvia anche la nuova sequenza
+            if (this.isPlaying) {
+                sequencer.processTick(this._currentTick);
+            }
+        }
     }
 
     removeSequence(sequenceId) {
         this.sequences.delete(sequenceId);
+    }
+
+    processTick() {
+        if (!this.isPlaying) return;
+        
+        // Log per debug
+        if (this.tick % 24 === 0) { // Log ogni battito
+            console.log('Transport tick:', {
+                tick: this.tick,
+                sequences: this.sequences.length,
+                playing: this.isPlaying
+            });
+        }
+
+        // Processa tutte le sequenze
+        this.sequences.forEach(sequence => {
+            if (sequence && typeof sequence.processTick === 'function') {
+                sequence.processTick(this.tick);
+            }
+        });
+
+        this.tick = (this.tick + 1) % this.getTicksPerLoop();
     }
 
     _tick() {
@@ -80,14 +110,16 @@ export default class Transport extends AbstractAudioComponent {
                 // Emit tick event
                 this.emit('tick', this._currentTick);
                 
-                this.sequences.forEach(sequence => {
-                    sequence.processTick(this._currentTick);
+                // Processa tutte le sequenze
+                this.sequences.forEach((sequence, id) => {
+                    if (sequence && typeof sequence.processTick === 'function') {
+                        try {
+                            sequence.processTick(this._currentTick);
+                        } catch (error) {
+                            console.error(`Error processing tick for sequence ${id}:`, error);
+                        }
+                    }
                 });
-
-                // Log debug ogni quarto
-                if (this._currentTick % this._ppqn === 0) {
-                    console.debug('Quarter note:', this._currentTick / this._ppqn);
-                }
             }
         }
 

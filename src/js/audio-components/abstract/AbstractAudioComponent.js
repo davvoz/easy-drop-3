@@ -6,6 +6,7 @@ export default class AbstractAudioComponent extends EventEmitter {
         this.id = id;
         this.audioContext = null;
         this.isInitialized = false;
+        this.internalSequencer = null;
     }
 
     async initialize(audioContext) {
@@ -38,5 +39,20 @@ export default class AbstractAudioComponent extends EventEmitter {
 
     transportTick(transport, beat) {
         // Override in subclass to handle transport ticks
+    }
+
+    setInternalSequencer(sequencer) {
+        if (this.internalSequencer) {
+            this.internalSequencer.setInstrument(null);
+        }
+        this.internalSequencer = sequencer;
+        if (sequencer) {
+            sequencer.setInstrument(this);
+        }
+        this.emit('sequencerChanged', sequencer);
+    }
+
+    getInternalSequencer() {
+        return this.internalSequencer;
     }
 }

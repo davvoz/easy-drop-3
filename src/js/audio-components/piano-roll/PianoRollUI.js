@@ -4,6 +4,7 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
     constructor(pianoRoll, options = {}) {
         super(pianoRoll, {
             className: 'piano-roll-component',
+            allowSequencer: false, // Disabilitiamo la possibilità di aggiungere sequencer a un piano roll
             ...options
         });
         
@@ -351,26 +352,36 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
     handleVelocityMouseDown(e) {
         if (!this.state.velocityMode) return;
 
-        const velocityGrid = e.currentTarget;
-        const rect = velocityGrid.getBoundingClientRect();
+        const velocityLane = this.container.querySelector('.velocity-lane');
         const gridContainer = this.container.querySelector('.piano-roll-grid-container');
+        const rect = velocityLane.getBoundingClientRect();
         
         const updateVelocityFromEvent = (moveEvent) => {
-            // Aggiusta il calcolo della x considerando lo scroll
-            const x = moveEvent.clientX - rect.left + gridContainer.scrollLeft;
-            const y = Math.min(Math.max(moveEvent.clientY, rect.top), rect.bottom) - rect.top;
-            const col = Math.floor(x / this.component.options.pixelsPerStep);
+            // Calcola la posizione X rispetto al viewport
+            const viewportX = moveEvent.clientX;
             
-            // Calcola il velocity (0-127) basato sulla posizione verticale
-            const velocity = Math.round((1 - y / rect.height) * 127);
+            // Calcola l'offset sinistro totale della velocity lane
+            const totalLeftOffset = rect.left;
             
-            // Trova la nota in questa colonna
-            const notesInColumn = this.component.getAllNotes().filter(note => note.col === col);
-            notesInColumn.forEach(note => {
-                this.component.updateNote(note.row, note.col, { 
-                    velocity: Math.max(0, Math.min(127, velocity)) 
+            // Calcola la posizione X relativa alla velocity lane, considerando lo scroll
+            const relativeX = viewportX - totalLeftOffset + gridContainer.scrollLeft;
+            
+            // Calcola il col usando la posizione relativa
+            const col = Math.floor(relativeX / this.component.options.pixelsPerStep);
+            
+            // Calcola la velocity usando l'altezza della velocity lane
+            const relativeY = Math.min(Math.max(0, moveEvent.clientY - rect.top), rect.height);
+            const velocity = Math.round((1 - relativeY / rect.height) * 127);
+            
+            // Aggiorna solo se il col è valido
+            if (col >= 0 && col < this.component.options.columns) {
+                const notesInColumn = this.component.getAllNotes().filter(note => note.col === col);
+                notesInColumn.forEach(note => {
+                    this.component.updateNote(note.row, note.col, { 
+                        velocity: Math.max(0, Math.min(127, velocity)) 
+                    });
                 });
-            });
+            }
         };
 
         // Aggiorna subito al click iniziale
@@ -392,7 +403,7 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
         window.addEventListener('mouseup', cleanup);
         
         this.state.isDragging = true;
-        e.preventDefault(); // Previene la selezione del testo
+        e.preventDefault();
     }
 
     calculateVelocityFromY(clientY) {

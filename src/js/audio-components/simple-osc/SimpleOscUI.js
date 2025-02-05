@@ -6,12 +6,18 @@ import Button from '../../ui-components/Button.js';
 export default class SimpleOscUI extends AbstractAudioComponentUI {
     constructor(simpleOsc, options = {}) {
         super(simpleOsc, {
-            className: 'simple-osc-component',
+            className: 'simple-osc-component vertical-layout',
+            allowSequencer: true, // Enable sequencer functionality
             ...options
         });
+        this.currentSequencerUI = null;
     }
 
     buildUI() {
+        // Create main controls container for oscillator
+        const oscillatorControls = document.createElement('div');
+        oscillatorControls.className = 'oscillator-controls';
+
         // Create DOM elements for knobs
         const freqKnobElement = document.createElement('div');
         freqKnobElement.className = 'knob-container frequency-knob';
@@ -71,11 +77,15 @@ export default class SimpleOscUI extends AbstractAudioComponentUI {
         // });
         // this.addControl('play', playButton);
 
-        // Append all controls
-        this.container.appendChild(freqKnobElement);
-        this.container.appendChild(volumeKnobElement);
-        this.container.appendChild(waveformContainer);
-        //playButton.render(this.container);
+        // Sposta tutti i controlli dell'oscillatore nel nuovo container
+        oscillatorControls.appendChild(freqKnobElement);
+        oscillatorControls.appendChild(volumeKnobElement);
+        oscillatorControls.appendChild(waveformContainer);
+
+        // Add main containers to component
+        this.container.appendChild(oscillatorControls);
+
+        // Il sequencer verrà aggiunto automaticamente dalla classe padre
     }
 
     setupEventListeners() {

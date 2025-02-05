@@ -11,6 +11,9 @@ export default class TransportUI extends AbstractAudioComponentUI {
     }
 
     buildUI() {
+        // Aggiungi riferimento al componente transport
+        this.container.__audioComponent = this.component;
+
         // Create transport controls container
         const controlsContainer = document.createElement('div');
         controlsContainer.className = 'transport-controls';
@@ -66,10 +69,8 @@ export default class TransportUI extends AbstractAudioComponentUI {
         });
 
         const playButton = this.getControl('play');
-        let isPlaying = false;
-
         playButton.on('trigger', () => {
-            if (!isPlaying) {
+            if (!this.component.isPlaying) {
                 this.component.start();
                 playButton.element.textContent = '⏹';
                 playButton.element.classList.add('playing');
@@ -78,7 +79,6 @@ export default class TransportUI extends AbstractAudioComponentUI {
                 playButton.element.textContent = '▶';
                 playButton.element.classList.remove('playing');
             }
-            isPlaying = !isPlaying;
         });
 
         // Listen for transport events
