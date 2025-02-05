@@ -10,6 +10,8 @@ import Transport from './audio-components/transport/Transport.js';
 import TransportUI from './audio-components/transport/TransportUI.js';
 import Sequencer from './audio-components/sequencer/Sequencer.js';
 import SequencerUI from './audio-components/sequencer/SequencerUI.js';
+import PianoRoll from './audio-components/piano-roll/PianoRoll.js';
+import PianoRollUI from './audio-components/piano-roll/PianoRollUI.js';
 
 async function initializeApp() {
     try {
@@ -75,8 +77,11 @@ async function initializeApp() {
         // Set up transport in AudioEngine
         audioEngine.setTransport(transport);
 
-        // Create sequencer
-        const sequencer = new Sequencer('seq-1');
+        // Create sequencer with custom grid size
+        const sequencer = new Sequencer('seq-1', {
+            rows: 4,      // Puoi modificare questi valori
+            columns: 8,   // per ottenere griglie diverse
+        });
         await audioEngine.addComponent(sequencer);
         
         // Connect sequencer to oscillator
@@ -87,6 +92,26 @@ async function initializeApp() {
         
         const sequencerUI = new SequencerUI(sequencer);
         renderEngine.addComponent(sequencerUI);
+
+        // Create piano roll with appropriate settings
+        const pianoRoll = new PianoRoll('piano-1', {
+            rows: 24,      // 2 ottave
+            columns: 16,   // Una battuta
+            startNote: 48, // C3
+            pixelsPerStep: 30,
+            stepsPerBeat: 4,
+            beatsPerBar: 4
+        });
+        await audioEngine.addComponent(pianoRoll);
+
+        // Connect piano roll to oscillator
+        pianoRoll.setInstrument(osc);
+
+        // Add piano roll to transport (importante!)
+        transport.addSequence(pianoRoll);
+
+        const pianoRollUI = new PianoRollUI(pianoRoll);
+        renderEngine.addComponent(pianoRollUI);
 
         // Now you can use transport controls to start/stop the sequence
         transport.setBPM(120);

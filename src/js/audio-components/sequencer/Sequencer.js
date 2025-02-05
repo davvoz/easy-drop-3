@@ -1,9 +1,16 @@
 import AbstractAudioComponent from '../abstract/AbstractAudioComponent.js';
 
 export default class Sequencer extends AbstractAudioComponent {
-    constructor(id) {
+    constructor(id, options = {}) {
         super(id);
-        this.steps = 16;
+        this.options = {
+            steps: 16,
+            rows: 4,
+            columns: 4,
+            ...options
+        };
+        
+        this.steps = this.options.rows * this.options.columns;
         this.grid = new Array(this.steps).fill(false);
         this.currentStep = 0;
         this.instrument = null;
@@ -35,6 +42,26 @@ export default class Sequencer extends AbstractAudioComponent {
 
             this.emit('step', this.currentStep);
         }
+    }
+
+    updateSize(rows, columns) {
+        this.options.rows = rows;
+        this.options.columns = columns;
+        
+        // Calculate new total steps
+        const newSteps = rows * columns;
+        const newGrid = new Array(newSteps).fill(false);
+        
+        // Preserve existing pattern where possible
+        for (let i = 0; i < Math.min(this.steps, newSteps); i++) {
+            newGrid[i] = this.grid[i];
+        }
+        
+        this.steps = newSteps;
+        this.grid = newGrid;
+        this.currentStep = Math.min(this.currentStep, newSteps - 1);
+        
+        this.emit('grid-update', this.grid);
     }
 
     connect(destination) {

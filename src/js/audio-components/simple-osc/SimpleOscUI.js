@@ -65,17 +65,17 @@ export default class SimpleOscUI extends AbstractAudioComponentUI {
         this.getControl('wave-sine').activate();
 
         // Sostituiamo il playButton con la nostra classe Button
-        const playButton = new Button('play-button', {
-            label: 'PLAY',
-            className: 'midi-button play-button'
-        });
-        this.addControl('play', playButton);
+        // const playButton = new Button('play-button', {
+        //     label: 'PLAY',
+        //     className: 'midi-button play-button'
+        // });
+        // this.addControl('play', playButton);
 
         // Append all controls
         this.container.appendChild(freqKnobElement);
         this.container.appendChild(volumeKnobElement);
         this.container.appendChild(waveformContainer);
-        playButton.render(this.container);
+        //playButton.render(this.container);
     }
 
     setupEventListeners() {
@@ -106,19 +106,19 @@ export default class SimpleOscUI extends AbstractAudioComponentUI {
         });
 
         // Aggiungiamo il listener per il playButton
-        const playButton = this.getControl('play');
-        let isPlaying = false;
+        // const playButton = this.getControl('play');
+        // let isPlaying = false;
 
-        playButton.on('trigger', () => {
-            if (!isPlaying) {
-                this.component.setVolume(100);
-                playButton.element.classList.add('playing');
-                isPlaying = true;
-            } else {
-                this.component.setVolume(0);
-                playButton.element.classList.remove('playing');
-                isPlaying = false;
-            }
-        });
+        // playButton.on('trigger', () => {
+        //     if (!isPlaying) {
+        //         this.component.setVolume(100);
+        //         playButton.element.classList.add('playing');
+        //         isPlaying = true;
+        //     } else {
+        //         this.component.setVolume(0);
+        //         playButton.element.classList.remove('playing');
+        //         isPlaying = false;
+        //     }
+        // });
     }
 }

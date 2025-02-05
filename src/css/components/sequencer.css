@@ -7,16 +7,20 @@
 
 .sequencer-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
     padding: 1rem;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
+    /* Rimuoviamo grid-template-columns fisso poiché ora è dinamico */
+    max-width: calc(100vw - 4rem);
+    overflow: auto;
 }
 
 .step-button {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
+    min-width: 30px;
+    min-height: 30px;
     border-radius: 6px;
     border: none;
     background: #2a2a2a;
@@ -41,3 +45,97 @@
     background: #7ab9ff;
     box-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
 }
+
+.sequencer-controls {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.size-selector {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.size-selector:hover {
+    background: #333;
+    border-color: rgba(74, 158, 255, 0.5);
+}
+
+.size-selector:focus {
+    outline: none;
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+.sequencer-controls .knob-container {
+    position: relative;
+    padding: 0.5rem;
+}
+
+.sequencer-controls .knob-container::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: -0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.input-group label {
+    font-size: 0.7rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.size-input {
+    width: 60px;
+    padding: 0.4rem;
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 4px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.size-input:hover {
+    border-color: rgba(74, 158, 255, 0.5);
+}
+
+.size-input:focus {
+    outline: none;
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+/* Rimuovi le frecce dall'input number */
+.size-input::-webkit-inner-spin-button,
+.size-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.size-input[type=number] {
+    -moz-appearance: textfield;
+}
+
