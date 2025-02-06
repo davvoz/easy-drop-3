@@ -9,6 +9,7 @@ export default class AbstractAudioComponentUI extends EventEmitter {
             className: 'audio-component',
             draggable: true,
             allowSequencer: true, // New option to enable/disable sequencer functionality
+            sequencerType: null, // Nuovo: tipo di sequencer (null, 'pianoRoll', 'stepSequencer', etc.)
             ...options
         };
 
@@ -209,5 +210,13 @@ export default class AbstractAudioComponentUI extends EventEmitter {
         container.innerHTML = '';
         this.currentSequencerUI = sequencerUI;
         sequencerUI.render(container);
+    }
+
+    createSequencer() {
+        if (!this.options.sequencerType) return null;
+        
+        // Ogni classe figlia implementerà questo metodo se necessario
+        console.warn('createSequencer() deve essere implementato dalla classe figlia');
+        return null;
     }
 }

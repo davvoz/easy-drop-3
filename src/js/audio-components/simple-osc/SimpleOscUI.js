@@ -2,14 +2,17 @@ import AbstractAudioComponentUI from '../abstract/AbstractAudioComponentUI.js';
 import Knob from '../../ui-components/Knob.js';
 import Radio from '../../ui-components/Radio.js';
 import Button from '../../ui-components/Button.js';
+import PianoRoll from '../piano-roll/PianoRoll.js';  // Aggiungi questa importazione
+import PianoRollUI from '../piano-roll/PianoRollUI.js';  // E questa per la UI
 
 export default class SimpleOscUI extends AbstractAudioComponentUI {
     constructor(simpleOsc, options = {}) {
         super(simpleOsc, {
             className: 'simple-osc-component vertical-layout',
-            allowSequencer: true, // Enable sequencer functionality
+            sequencerType: 'pianoRoll', // Specifichiamo che vogliamo un piano roll
             ...options
         });
+        
         this.currentSequencerUI = null;
     }
 
@@ -56,26 +59,20 @@ export default class SimpleOscUI extends AbstractAudioComponentUI {
         const waveformContainer = document.createElement('div');
         waveformContainer.className = 'waveform-container';
 
+        // Fix the radio buttons rendering
         waveforms.forEach(({ type, symbol }) => {
-            const btn = new Radio(`wave-${type}`, {
+            const radio = new Radio(`wave-${type}`, {
                 label: symbol,
                 className: 'wave-button',
                 group: 'waveforms'
             });
             
-            this.addControl(`wave-${type}`, btn);
-            btn.render(waveformContainer);
+            this.addControl(`wave-${type}`, radio);
+            radio.render(waveformContainer); // This should now work correctly
         });
 
-        // Set initial waveform
+        // Set initial waveform after rendering
         this.getControl('wave-sine').activate();
-
-        // Sostituiamo il playButton con la nostra classe Button
-        // const playButton = new Button('play-button', {
-        //     label: 'PLAY',
-        //     className: 'midi-button play-button'
-        // });
-        // this.addControl('play', playButton);
 
         // Sposta tutti i controlli dell'oscillatore nel nuovo container
         oscillatorControls.appendChild(freqKnobElement);
@@ -85,7 +82,11 @@ export default class SimpleOscUI extends AbstractAudioComponentUI {
         // Add main containers to component
         this.container.appendChild(oscillatorControls);
 
-        // Il sequencer verrà aggiunto automaticamente dalla classe padre
+        // Create sequencer if needed
+        this.currentSequencerUI = this.createSequencer();
+        if (this.currentSequencerUI && this.currentSequencerUI.container) {
+            this.container.appendChild(this.currentSequencerUI.container);
+        }
     }
 
     setupEventListeners() {
@@ -130,5 +131,28 @@ export default class SimpleOscUI extends AbstractAudioComponentUI {
         //         isPlaying = false;
         //     }
         // });
+    }
+
+    createSequencer() {
+        if (this.options.sequencerType !== 'pianoRoll') return null;
+
+        const pianoRoll = new PianoRoll(`piano-osc-${this.component.id}`, {
+            rows: 88,
+            columns: 64,
+            startNote: 21,
+            endNote: 108,
+            pixelsPerStep: 30,
+            stepsPerBeat: 4,
+            beatsPerBar: 4,
+            composerOptions: {
+                rootNote: 60,
+                melodicRange: 48
+            }
+        });
+
+        pianoRoll.setInstrument(this.component);
+        const pianoRollUI = new PianoRollUI(pianoRoll);
+
+        return pianoRollUI;
     }
 }

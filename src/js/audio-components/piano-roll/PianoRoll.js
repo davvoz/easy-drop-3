@@ -4,15 +4,16 @@ export default class PianoRoll extends AbstractAudioComponent {
     constructor(id, options = {}) {
         super(id);
         this.options = {
-            rows: 88,
+            rows: 128,
             columns: 64,
-            startNote: 21,
+            startNote: 0,
+            endNote: 127,
             pixelsPerStep: 30,
             stepsPerBeat: 4,
             beatsPerBar: 4,
             ...options
         };
-        
+
         this.patterns = Array(5).fill().map(() => ({
             notes: new Map(),
             beatsPerBar: options.beatsPerBar || 4
@@ -22,6 +23,36 @@ export default class PianoRoll extends AbstractAudioComponent {
         this.playhead = 0;
         this.instrument = null;
         this.isPlaying = false;
+
+        // Rimuovi il composer e usa una configurazione base
+        this.config = {
+            melodic: {
+                title: 'Settings',
+                groups: {
+                    basic: {
+                        octaveRange: {
+                            type: 'range',
+                            min: 1,
+                            max: 4,
+                            step: 1,
+                            value: 2,
+                            label: 'Octave Range'
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    // Aggiungiamo metodi helper per la conversione note MIDI <-> grid
+    midiNoteToRow(midiNote) {
+        // Converti da nota MIDI a riga della griglia (invertita perché la griglia va dal basso all'alto)
+        return this.options.rows - 1 - (midiNote - this.options.startNote);
+    }
+
+    rowToMidiNote(row) {
+        // Converti da riga della griglia a nota MIDI
+        return this.options.startNote + (this.options.rows - 1 - row);
     }
 
     // Note management
@@ -134,10 +165,12 @@ export default class PianoRoll extends AbstractAudioComponent {
 
     // Aggiungiamo un metodo helper per validare le note
     validateNote(note) {
+        // Aggiorniamo la validazione per il nuovo range
         return note && 
                typeof note.row === 'number' && 
                typeof note.col === 'number' && 
                note.row >= 0 && 
+               note.row < this.options.rows &&
                note.col >= 0 && 
                (note.length || 1) > 0 && 
                (note.velocity || 100) > 0;
@@ -276,5 +309,46 @@ export default class PianoRoll extends AbstractAudioComponent {
             });
         }
         return true;
+    }
+
+    // Simplified generation method
+    generatePattern(measures = 1) {
+        // Clear current pattern
+        this.clearCurrentPattern();
+        return [];
+    }
+
+    clearCurrentPattern() {
+        const currentNotes = this.getAllNotes();
+        currentNotes.forEach(note => {
+            this.removeNote(note.row, note.col);
+        });
+    }
+
+    // Sostituisci i metodi del composer con versioni semplificate
+    getComposerConfigSection(section) {
+        return this.config[section];
+    }
+
+    updateComposerConfig(section, group, parameter, value) {
+        if (this.config[section]?.groups[group]?.[parameter]) {
+            this.config[section].groups[group][parameter].value = value;
+            this.emit('configUpdated', { section, group, parameter, value });
+        }
+        return this;
+    }
+
+    getCurrentConfig() {
+        const result = {};
+        Object.entries(this.config).forEach(([section, data]) => {
+            result[section] = {};
+            Object.entries(data.groups).forEach(([group, parameters]) => {
+                result[section][group] = {};
+                Object.entries(parameters).forEach(([param, config]) => {
+                    result[section][group][param] = config.value;
+                });
+            });
+        });
+        return result;
     }
 }

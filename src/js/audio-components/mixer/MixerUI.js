@@ -7,6 +7,7 @@ export default class MixerUI extends AbstractAudioComponentUI {
     constructor(mixer, options = {}) {
         super(mixer, {
             className: 'mixer-component',
+            sequencerType: null, // Il mixer non ha sequencer
             ...options
         });
     }

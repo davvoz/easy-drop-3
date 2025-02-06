@@ -115,8 +115,10 @@ export default class Button extends AbstractUIComponent {
     }
 
     render(container) {
-        container.appendChild(this.element);
-        return this;
+        if (container) {
+            container.appendChild(this.element);
+        }
+        return this.element; // Importante: ritorniamo l'elemento DOM
     }
 }
 

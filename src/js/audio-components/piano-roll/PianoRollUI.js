@@ -1,5 +1,6 @@
 import AbstractAudioComponentUI from '../abstract/AbstractAudioComponentUI.js';
 import Button from '../../ui-components/Button.js';
+import PianoRoll from './PianoRoll.js';   // Aggiungi questa importazione
 
 export default class PianoRollUI extends AbstractAudioComponentUI {
     constructor(pianoRoll, options = {}) {
@@ -82,9 +83,9 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
     buildUI() {
         this.container.innerHTML = `
             <div class="piano-roll-container">
-                <div class="piano-roll-toolbar"></div>
-                <div class="piano-roll-content">
-                    <div class="piano-roll-main">
+                <div class="piano-roll-main">
+                    <div class="piano-roll-toolbar"></div>
+                    <div class="piano-roll-content">
                         <div class="piano-roll-grid-container">
                             <div class="piano-roll-grid"></div>
                             <div class="playhead"></div>
@@ -110,7 +111,7 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
             { id: 'select', icon: '◻️', label: 'Select', tooltip: 'Select notes (S)' },
             { id: 'erase', icon: '🗑️', label: 'Erase notes (E)' },
             { type: 'separator' },
-            { id: 'velocity', icon: '📊', label: 'Velocity', tooltip: 'Velocity mode (V)', toggle: true, active: this.state.velocityMode },
+            { id: 'velocity', icon: '📊', label: 'Velocity', tooltip: 'Velocity mode (V)', toggle: true },
             { type: 'separator' },
             { type: 'beats-control' },
             { type: 'separator' },
@@ -235,6 +236,16 @@ export default class PianoRollUI extends AbstractAudioComponentUI {
 
             toolbar.appendChild(button);
         });
+
+        // Aggiungi pulsante configurazione
+        const configButton = document.createElement('button');
+        configButton.className = 'tool-button config';
+        configButton.innerHTML = `
+            <span class="tool-icon">⚙️</span>
+            <span class="tool-label">Config</span>
+        `;
+        configButton.addEventListener('click', () => this.showConfigPanel());
+        toolbar.appendChild(configButton);
     }
 
     startPatternDrag(sourcePattern, sourceElement) {

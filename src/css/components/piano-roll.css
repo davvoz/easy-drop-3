@@ -5,6 +5,7 @@
     --bg-darker: #141414;
     --border-color: #333;
     --grid-color: rgba(255,255,255,0.07);
+    --pixel-per-step: 20px;  /* Riduciamo leggermente la dimensione dei pixel per gestire più note */
 }
 
 .piano-roll-component {
@@ -25,7 +26,21 @@
     background: var(--bg-darker);
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    overflow: hidden; /* Changed from auto to hidden */
+    overflow: hidden;
+}
+
+/* Remove piano-roll-sidebar section */
+
+/* Remove config-section related styles */
+.config-section,
+.config-section h3,
+.config-group,
+.config-control,
+.config-control label,
+.config-control input[type="range"],
+.config-control select,
+.config-value {
+    display: none;
 }
 
 .piano-roll-content {
@@ -178,7 +193,8 @@
 
 .note-block {
     position: absolute;
-    height: var(--cell-height);
+    height: calc(var(--pixel-per-step) - 1px); /* -1px per il bordo */
+    min-height: 12px;  /* Aggiungiamo una dimensione minima per la visibilità */
     background: linear-gradient(180deg,
         var(--primary-color) 0%,
         color-mix(in srgb, var(--primary-color) 80%, black) 100%);
@@ -421,7 +437,7 @@
     text-align: right;
 }
 
-/* ...existing code... */
+
 
 .patterns-control {
     display: flex;
@@ -658,3 +674,165 @@
     margin-top: 4px;
     z-index: 100;
 }
+
+
+
+.composition-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+}
+
+.composition-preset {
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+}
+
+.composition-preset:hover {
+    border-color: var(--primary-color);
+}
+
+.composition-preset:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+}
+
+
+
+
+
+.piano-roll-grid {
+    
+    background-image:
+        /* Aggiungiamo linee per le ottave */
+        linear-gradient(90deg, 
+            rgba(255,255,255,0.15) 1px, 
+            transparent 1px
+        ),
+        /* Linee per i semitoni */
+        linear-gradient(0deg,
+            rgba(255,255,255,0.07) 1px,
+            transparent 1px
+        );
+    background-size: 
+        /* Una barra è larga beatsPerBar * pixelsPerStep */
+        calc(var(--beats-per-bar) * var(--pixel-per-step)) 100%,
+        /* Un semitono è alto pixelsPerStep */
+        100% var(--pixel-per-step);
+}
+
+.piano-roll-grid {
+    
+    background-image:
+        /* Linee per le ottave (ogni 12 note) */
+        linear-gradient(0deg, 
+            rgba(255,255,255,0.15) 1px, 
+            transparent 1px
+        ),
+        /* Linee per le battute */
+        linear-gradient(90deg, 
+            rgba(255,255,255,0.1) 1px, 
+            transparent 1px
+        ),
+        /* Linee per i semitoni */
+        linear-gradient(0deg,
+            rgba(255,255,255,0.05) 1px,
+            transparent 1px
+        );
+    background-size:
+        100% calc(var(--pixel-per-step) * 12),  /* Ottave */
+        calc(var(--beats-per-bar) * var(--pixel-per-step) * 4) 100%,  /* Battute */
+        100% var(--pixel-per-step);  /* Semitoni */
+}
+
+/* Aggiorniamo le dimensioni delle note per adattarsi meglio alla griglia più densa */
+.note-block {
+    height: calc(var(--pixel-per-step) - 1px); /* -1px per il bordo */
+    
+}
+
+
+
+/* Stili per i tabs di configurazione */
+.config-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.config-tab {
+    padding: 4px 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: #888;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.config-tab.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+/* Bottone Generate */
+.generate-button {
+    width: 100%;
+    padding: 8px;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    margin-top: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.generate-button:hover {
+    opacity: 0.9;
+}
+
+
+
+
+
+.distribution-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.distribution-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.distribution-item label {
+    color: #888;
+    font-size: 11px;
+    text-transform: capitalize;
+}
+
+.distribution-item input[type="range"] {
+    width: 100%;
+    margin: 0;
+}
+
+.distribution-item .value {
+    font-size: 10px;
+    color: #666;
+    text-align: right;
+}
+
+
